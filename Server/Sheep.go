@@ -18,7 +18,7 @@ type Sheep struct {
 const sheepEnergy int = 3600
 const sheepSpeed float64 = 5
 const sheepSize int = 25
-const sheepRandWeight float32 = 1 / 100
+const sheepRandWeight float32 = float32(1) / 100
 const sheepMateBarrier int = 1800
 const sheepMateLoss int = 900
 const sheepMatePartnerCooldown int = 240

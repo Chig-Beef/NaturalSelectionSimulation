@@ -174,7 +174,7 @@ func convFromStr(data string) (Brain, error) {
 	splitData := strings.Split(data, "=")
 
 	if len(splitData) != 3 {
-		return brain, errors.New("Expected inputs, layers, outputs, did not get the right amount to hold these 3 values.")
+		return brain, errors.New("expected inputs, layers, outputs, did not get the right amount to hold these 3 values")
 	}
 
 	inputs := strings.Split(splitData[0], "+")
@@ -185,7 +185,7 @@ func convFromStr(data string) (Brain, error) {
 		for _, weight := range obj {
 			temp, err := strconv.ParseFloat(weight, 32)
 			if err != nil {
-				return brain, errors.New("A weight in a brain wasn't in the correct format.")
+				return brain, errors.New("a weight in a brain wasn't in the correct format")
 			}
 
 			brain.inputs[i].weights = append(brain.inputs[i].weights, float32(temp))
@@ -204,7 +204,7 @@ func convFromStr(data string) (Brain, error) {
 			for _, weight := range objN {
 				temp, err := strconv.ParseFloat(weight, 32)
 				if err != nil {
-					return brain, errors.New("A weight in a brain wasn't in the correct format.")
+					return brain, errors.New("a weight in a brain wasn't in the correct format")
 				}
 
 				brain.layers[i].nodes[j].weights = append(brain.layers[i].nodes[j].weights, float32(temp))
@@ -214,7 +214,7 @@ func convFromStr(data string) (Brain, error) {
 
 	outputs, err := strconv.Atoi(splitData[2])
 	if err != nil {
-		return brain, errors.New("The amount of outputs was not a valid number.")
+		return brain, errors.New("the amount of outputs was not a valid number")
 	}
 	for i := 0; i < outputs; i++ {
 		brain.outputs = append(brain.outputs, Output{})

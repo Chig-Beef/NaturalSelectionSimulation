@@ -7,8 +7,9 @@ let simTime = 0;
 
 async function setup() {
     const cnv = createCanvas(width, width); // The little window in the middle of the simulation
-    const response = await fetch("http://localhost:9090/start/" + unqId);
+    const response = await fetch("http://localhost/start/" + unqId);
     const data = await response.json();
+    frameRate(24);
 }
 
 // Performance testing
@@ -21,8 +22,9 @@ async function draw() {
     let t1 = Date.now();
 
     // Get the data
-    const response = await fetch("http://localhost:9090/sim/" + unqId);
-    try {const data = await response.json();}
+    const response = await fetch("http://localhost/sim/" + unqId);
+    let data;
+    try {data = await response.json();}
     catch {
         return;
     }
@@ -76,16 +78,16 @@ buttonBack.onclick = () => {
 }
 
 buttonRestart.onclick = async () => {
-    let response = await fetch("http://localhost:9090/remove/" + unqId);
+    let response = await fetch("http://localhost/remove/" + unqId);
     let data = await response.json();
     unqId = parseInt(Math.random() * 500_000);
-    response = await fetch("http://localhost:9090/start/" + unqId);
+    response = await fetch("http://localhost/start/" + unqId);
     data = await response.json();
     simTime = 0;
 }
 
 buttonReadout.onclick = async () => {
-    const response = await fetch("http://localhost:9090/readout/" + unqId);
+    const response = await fetch("http://localhost/readout/" + unqId);
     const data = await response.json();
     divReadout.innerHTML = data;
 }

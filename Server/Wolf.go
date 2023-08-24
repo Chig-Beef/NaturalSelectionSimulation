@@ -14,17 +14,17 @@ type Wolf struct {
 	mateCooldown int
 }
 
-const wolfEnergy int = 3600                  // How much energy a wolf has when made at the start of the simulation
-const wolfSpeed float64 = 5                  // How fast the wolf is
-const wolfSize int = 25                      // How big a wolf is
-const wolfRandWeight float32 = 1 / 100       // The chance that a new weight is random rather than inherited
-const wolfMateBarrier int = 1800             // How much energy a wolf needs to breed
-const wolfMateLoss int = 900                 // How much energy a wolf loses from breeding
-const wolfMatePartnerCooldown int = 240      // How long from giving birth a wolf can attempt mating again
-const wolfMateChildCooldown int = 360        // How long from being born a wolf can attempt to mate
-const wolfChildEnergy int = 2 * wolfMateLoss // How much energy a wolf has when it is born
-const wolfMaxAmt int = 300                   // Maximum amount of wolves
-const wolfViewDis float64 = 100              // How far a wolf can see
+const wolfEnergy int = 3600                     // How much energy a wolf has when made at the start of the simulation
+const wolfSpeed float64 = 5                     // How fast the wolf is
+const wolfSize int = 25                         // How big a wolf is
+const wolfRandWeight float32 = float32(1) / 100 // The chance that a new weight is random rather than inherited
+const wolfMateBarrier int = 1800                // How much energy a wolf needs to breed
+const wolfMateLoss int = 900                    // How much energy a wolf loses from breeding
+const wolfMatePartnerCooldown int = 240         // How long from giving birth a wolf can attempt mating again
+const wolfMateChildCooldown int = 360           // How long from being born a wolf can attempt to mate
+const wolfChildEnergy int = 2 * wolfMateLoss    // How much energy a wolf has when it is born
+const wolfMaxAmt int = 300                      // Maximum amount of wolves
+const wolfViewDis float64 = 100                 // How far a wolf can see
 
 // Methods
 func (wlf *Wolf) update(state *State) bool {
