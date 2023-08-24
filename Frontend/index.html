@@ -1,0 +1,49 @@
+<html>
+    <head>
+        <meta charset="utf-8"/>
+        <title>Simulation</title>
+        <link rel="stylesheet" type="text/css" href="styles.css">
+        <script src="p5.js"></script>
+    </head>
+    <body>
+        <div id="topDiv">
+            <h1>Natural Selection Simulation</h1>
+        </div>
+
+        <div id="leftDiv">
+            <button id="buttonRestart">Restart</button>
+            <div id="divStats"></div>
+            <button id="buttonReadout">Data</button>
+            <div id="divReadout"></div>
+        </div>
+
+        <main id="mainDiv"></main>
+
+        <div id="rightDiv">
+            <button id="buttonHelp">Help</button>
+        </div>
+        
+        <div id="bottomDiv">
+            <button id="buttonBack">Back</button>
+            <span id="helpText">
+                <h1>Information</h1>
+                <h2>Description</h2>
+                <p>
+                    This is a simulation of natural selection which features sheep, wolves, and grass.
+                    Grass grows randomly and stays still.
+                    Sheep can move and eat grass.
+                    Wolves can move and eat sheep.
+                    When a sheep or grass has been eaten too much it is removed.
+                    Sheep and wolves can detect objects in the simulation to try to follow or avoid them.
+                    Sheep and wolves also can have children, which will inherit the parent's neural network.
+                    Over time, the sheep should learn to survive over time, or starve/get eaten.
+                </p>
+                <h2>Other</h2>
+            </span>
+        </div>
+
+        <!-- JavaScript -->
+        <script src="classes.js"></script>
+        <script src="sketch.js"></script>
+    </body>
+</html>

@@ -1,0 +1,66 @@
+body {
+    padding: 0;
+    margin: 0;
+    overflow:hidden;
+    font-family: Tahoma;
+}
+
+#mainDiv {
+    width: 50vw;
+    display: inline-block;
+}
+
+#topDiv {
+    color: whitesmoke;
+    background-color: gray;
+    width: 100vw;
+    height: 10vh;
+    text-align: center;
+}
+
+h1 {
+    font-size: 7.5vh;
+}
+
+#leftDiv {
+    background-color: darkgray;
+    width: 24vw;
+    height: 90vh;
+    float: left;
+    text-align: center;
+}
+
+#rightDiv {
+    background-color: darkgray;
+    width: 24vw;
+    height: 90vh;
+    float: right;
+    text-align: center;
+}
+
+#bottomDiv {
+    width: 100vw;
+}
+
+#helpText {
+    opacity: 0;
+}
+
+button {
+    border-radius: 10px;
+    border-style: hidden;
+    width: 12vw;
+    height: 6.8vh;
+    margin: 5px;
+    font-size: 5.5vh;
+}
+
+#divStats {
+    color: white;
+    background-color: midnightblue;
+}
+
+#divReadout {
+    color: white;
+    background-color: midnightblue;
+}
