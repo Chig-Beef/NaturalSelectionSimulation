@@ -47,9 +47,15 @@ func (state *State) step() {
 	tempWolves := make([]*Wolf, count) // Create temporary slice
 	dif := 0
 	for i := 0; i < count; i++ {
-		// This is a while loops (golang only has the for keyword)
+		// This is a while loop (golang only has the for keyword)
 		for !state.allWolves[i+dif].alive {
 			dif++
+			if i+dif >= len(state.allWolves) {
+				break
+			}
+		}
+		if i+dif >= len(state.allWolves) {
+			break
 		}
 		tempWolves[i] = state.allWolves[i+dif]
 	}
@@ -67,6 +73,12 @@ func (state *State) step() {
 	for i := 0; i < count; i++ {
 		for !state.allSheep[i+dif].alive {
 			dif++
+			if i+dif >= len(state.allSheep) {
+				break
+			}
+		}
+		if i+dif >= len(state.allSheep) {
+			break
 		}
 		tempSheep[i] = state.allSheep[i+dif]
 	}
@@ -84,6 +96,12 @@ func (state *State) step() {
 	for i := 0; i < count; i++ {
 		for !state.allGrass[i+dif].alive {
 			dif++
+			if i+dif >= len(state.allGrass) {
+				break
+			}
+		}
+		if i+dif >= len(state.allGrass) {
+			break
 		}
 		tempGrass[i] = state.allGrass[i+dif]
 	}

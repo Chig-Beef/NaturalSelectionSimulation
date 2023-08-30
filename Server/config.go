@@ -74,7 +74,7 @@ func convConfigFromStr(data string) (Config, error) {
 
 	// Just to make sure
 	if len(fields) != 27 {
-		return newConfig, errors.New("Expected 27 fields in config.")
+		return newConfig, errors.New("expected 27 fields in config")
 	}
 
 	// Converting each field
@@ -242,12 +242,4 @@ func convConfigFromStr(data string) (Config, error) {
 
 	// Return
 	return newConfig, nil
-}
-
-func splitSplice(data []string, delim string) [][]string {
-	output := make([][]string, len(data))
-	for i := 0; i < len(data); i++ {
-		output[i] = strings.Split(data[i], delim)
-	}
-	return output
 }
