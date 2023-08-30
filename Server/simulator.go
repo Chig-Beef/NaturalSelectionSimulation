@@ -9,6 +9,8 @@ type State struct {
 	allGrass  []*Grass
 	allWolves []*Wolf
 	allSheep  []*Sheep
+	active    bool
+	config    Config
 }
 
 var simulations map[int]*State = make(map[int]*State) // All the student's simulations
@@ -20,8 +22,7 @@ const grassChance int = 10 // Change that grass spawns every frame. Out of 1,000
 
 func (state *State) step() {
 	// Steps a State one frame
-
-	if len(state.allGrass) < grassMaxAmt {
+	if len(state.allGrass) < state.config.grassMaxAmt {
 		placeGrass := rand.Intn(1_000)
 		if placeGrass < grassChance {
 
@@ -29,41 +30,64 @@ func (state *State) step() {
 			state.allGrass = append(state.allGrass, &Grass{
 				rand.Intn(1_000),
 				rand.Intn(1_000),
-				grassEnergy,
+				state.config.grassEnergy,
+				true,
 			})
 		}
 	}
 
-	var i int
-	i = 0
-
-	// These are while loops (golang only has the for keyword)
-	// The else cases are if the thing has died, and so they are therefore removed
-	for i < len(state.allWolves) {
+	// Wolves
+	// Count up all the alive wolves
+	count := 0
+	for i := 0; i < len(state.allWolves); i++ {
 		if state.allWolves[i].update(state) {
-			i++
-		} else {
-			state.allWolves = append(state.allWolves[:i], state.allWolves[i+1:]...)
+			count++
 		}
 	}
+	tempWolves := make([]*Wolf, count) // Create temporary slice
+	dif := 0
+	for i := 0; i < count; i++ {
+		// This is a while loops (golang only has the for keyword)
+		for !state.allWolves[i+dif].alive {
+			dif++
+		}
+		tempWolves[i] = state.allWolves[i+dif]
+	}
+	state.allWolves = tempWolves
 
-	i = 0
-	for i < len(state.allSheep) {
+	// Sheep
+	count = 0
+	for i := 0; i < len(state.allSheep); i++ {
 		if state.allSheep[i].update(state) {
-			i++
-		} else {
-			state.allSheep = append(state.allSheep[:i], state.allSheep[i+1:]...)
+			count++
 		}
 	}
+	tempSheep := make([]*Sheep, count)
+	dif = 0
+	for i := 0; i < count; i++ {
+		for !state.allSheep[i+dif].alive {
+			dif++
+		}
+		tempSheep[i] = state.allSheep[i+dif]
+	}
+	state.allSheep = tempSheep
 
-	i = 0
-	for i < len(state.allGrass) {
+	// Grass
+	count = 0
+	for i := 0; i < len(state.allGrass); i++ {
 		if state.allGrass[i].update(state) {
-			i++
-		} else {
-			state.allGrass = append(state.allGrass[:i], state.allGrass[i+1:]...)
+			count++
 		}
 	}
+	tempGrass := make([]*Grass, count)
+	dif = 0
+	for i := 0; i < count; i++ {
+		for !state.allGrass[i+dif].alive {
+			dif++
+		}
+		tempGrass[i] = state.allGrass[i+dif]
+	}
+	state.allGrass = tempGrass
 }
 
 func (state State) toJson() string {
@@ -112,6 +136,7 @@ func (state State) toJson() string {
 
 	// Concat and return
 	output := "[" + grassText + "," + wolfText + "," + sheepText + "]"
+
 	return output
 }
 
@@ -122,6 +147,8 @@ func createNewSimulation(id int) *State {
 		initializeGrassSlice(),
 		initializeWolfSlice(),
 		initializeSheepSlice(),
+		true,
+		makeDefaultConfig(),
 	}
 	return simulations[id]
 }
@@ -134,6 +161,7 @@ func initializeGrassSlice() []*Grass {
 			rand.Intn(1_000),
 			rand.Intn(1_000),
 			grassEnergy,
+			true,
 		})
 	}
 
@@ -151,6 +179,7 @@ func initializeWolfSlice() []*Wolf {
 			wolfEnergy,
 			0,
 			0,
+			true,
 		})
 	}
 
@@ -168,6 +197,7 @@ func initializeSheepSlice() []*Sheep {
 			sheepEnergy,
 			0,
 			0,
+			true,
 		})
 	}
 

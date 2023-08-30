@@ -12,6 +12,8 @@ import (
 	This file is the routing logic of the server, and connects everything together in a port for the client
 */
 
+const framerate int = 24
+
 func main() {
 	// This is asynchronously using the "go" keyword.
 	// This means that it starts executing, but when "runCommand"
@@ -29,10 +31,46 @@ func main() {
 	r.HandleFunc("/start/{id}", startSimulation).Methods("GET") // When starting a simulation
 	r.HandleFunc("/remove/{id}", removeSimulation).Methods("GET")
 	r.HandleFunc("/readout/{id}", createReadout).Methods("GET")
+	r.HandleFunc("/config/{id}/{data}", changeConfig).Methods("GET")
 	r.PathPrefix("/").Handler(http.FileServer(http.Dir("../Frontend"))) // Getting the regular html
 	http.Handle("/", r)
 
 	http.ListenAndServe(":9090", nil)
+}
+
+func changeConfig(w http.ResponseWriter, r *http.Request) {
+	// Get variables from request
+	vars := mux.Vars(r)
+	id := vars["id"]
+	data := vars["data"]
+
+	// Get the simulation
+	simRequest, err := strconv.Atoi(id)
+	if err != nil {
+		fmt.Println("A simulation request wasn't an integer.")
+		return
+	}
+	sim, result := simulations[simRequest]
+	if !result {
+		fmt.Println("No simulation found.")
+		return
+	}
+
+	// Make changes in simulation config
+	config, err := convConfigFromStr(data)
+	if err != nil {
+		fmt.Println("The config received from request was bad.")
+		fmt.Println(err)
+		return
+	}
+	sim.config = config
+
+	// Respond with success
+	_, err = fmt.Fprint(w, "\"Success\"")
+	if err != nil {
+		fmt.Println("Issue occured in response writing.")
+	}
+	fmt.Println("Config changed.")
 }
 
 func createReadout(w http.ResponseWriter, r *http.Request) {
@@ -55,6 +93,7 @@ func createReadout(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// <br>s are used for newlines in the HTML
 	outputData := "\""
 	outputData += strconv.Itoa(len(sim.allGrass)) +
 		"<br>" +
@@ -64,7 +103,10 @@ func createReadout(w http.ResponseWriter, r *http.Request) {
 		"<br>" +
 		strconv.Itoa(sim.getEnergy()) +
 		"\""
-	fmt.Fprint(w, outputData)
+	_, err = fmt.Fprint(w, outputData)
+	if err != nil {
+		fmt.Println("Issue occured in response writing.")
+	}
 	fmt.Println("Readout given.")
 }
 
@@ -88,9 +130,9 @@ func removeSimulation(w http.ResponseWriter, r *http.Request) {
 	// takes a map and deletes a key value pair.
 	delete(simulations, simRequest)
 
-	bytes, err := fmt.Fprint(w, "\"Success\"")
+	_, err = fmt.Fprint(w, "\"Success\"")
 	if err != nil {
-		fmt.Println("Issue occured in response writing." + strconv.Itoa(bytes))
+		fmt.Println("Issue occured in response writing.")
 	}
 
 	fmt.Println("Connection successfully ended.")
@@ -111,9 +153,9 @@ func startSimulation(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Connection successfully made.")
 	output := sim.toJson()
 
-	bytes, err := fmt.Fprint(w, output)
+	_, err = fmt.Fprint(w, output)
 	if err != nil {
-		fmt.Println("Issue occured in response writing." + strconv.Itoa(bytes))
+		fmt.Println("Issue occured in response writing.")
 	}
 }
 
@@ -134,11 +176,18 @@ func takeRequest(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Calculate all the object's movements and send it back
-	sim.step()
-	output := sim.toJson()
+	output := "["
+	for i := 0; i < framerate; i++ {
+		sim.step()
+		output += sim.toJson() + ","
+	}
+	output = output[:len(output)-1]
+	output += "]"
 
-	bytes, err := fmt.Fprint(w, output)
+	sim.active = true
+
+	_, err = fmt.Fprint(w, output)
 	if err != nil {
-		fmt.Println("Issue occured in response writing." + strconv.Itoa(bytes))
+		fmt.Println("Issue occured in response writing.")
 	}
 }

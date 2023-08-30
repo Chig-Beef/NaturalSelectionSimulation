@@ -24,7 +24,7 @@ h1 {
 
 #leftDiv {
     background-color: darkgray;
-    width: 24vw;
+    width: 25vw;
     height: 90vh;
     float: left;
     text-align: center;
@@ -32,7 +32,7 @@ h1 {
 
 #rightDiv {
     background-color: darkgray;
-    width: 24vw;
+    width: 25vw;
     height: 90vh;
     float: right;
     text-align: center;

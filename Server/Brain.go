@@ -13,7 +13,7 @@ type Brain struct {
 	outputs []Output
 }
 
-const nLayers int = 3  // How many layers
+const nLayers int = 7  // How many layers
 const nDepth int = 8   // How many nodes per layer
 const nInputs int = 7  // How many inputs
 const nOutputs int = 4 // How many outputs
@@ -167,7 +167,7 @@ func (brain Brain) convToStr() string {
 	return outputString
 }
 
-func convFromStr(data string) (Brain, error) {
+func convBrainFromStr(data string) (Brain, error) {
 	// Create a Brain from string
 
 	brain := Brain{}

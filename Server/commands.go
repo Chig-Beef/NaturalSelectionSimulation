@@ -6,6 +6,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 )
 
 func runCommand() {
@@ -27,9 +28,9 @@ func runCommand() {
 		}
 
 		// Commands are returned with /r/n appended, so this gets rid of those
-		text = text[:len(text)-2]
+		command := strings.Split(text[:len(text)-2], " ")
 
-		switch text {
+		switch command[0] {
 		case "quit":
 			running = false // Breaks the loop
 		case "save":
@@ -40,6 +41,10 @@ func runCommand() {
 			help()
 		case "keys":
 			getKeys()
+		case "remove":
+			removeKey(command[1:])
+		case "limit":
+			limit()
 		default:
 			fmt.Println("Invalid Command.")
 		}
@@ -247,7 +252,7 @@ func load() {
 			}
 			state.allSheep[i].angle = tempFloat
 
-			tempBrain, err := convFromStr(obj[5]) // Gets the brain into brain form
+			tempBrain, err := convBrainFromStr(obj[5]) // Gets the brain into brain form
 			if err != nil {
 				fmt.Println(err)
 				continue
@@ -301,7 +306,7 @@ func load() {
 			}
 			state.allWolves[i].angle = tempFloat
 
-			tempBrain, err := convFromStr(obj[5])
+			tempBrain, err := convBrainFromStr(obj[5])
 			if err != nil {
 				fmt.Println(err)
 				continue
@@ -325,9 +330,80 @@ func getKeys() {
 }
 
 func help() {
-	fmt.Println("help\t=>\tLists all commands.")
-	fmt.Println("quit\t=>\tEnds the server (will freeze all client simulations).")
-	fmt.Println("save\t=>\tSaves all simulations into a CSV (on this computer).")
-	fmt.Println("load\t=>\tLoads save file and initialises all simulations.")
-	fmt.Println("keys\t=>\tReturns all the keys for every active simulation.")
+	fmt.Println("help\t\t=>\tLists all commands.")
+	fmt.Println("quit\t\t=>\tEnds the server (will freeze all client simulations).")
+	fmt.Println("save\t\t=>\tSaves all simulations into a CSV (on this computer).")
+	fmt.Println("load\t\t=>\tLoads save file and initialises all simulations.")
+	fmt.Println("keys\t\t=>\tReturns all the keys for every active simulation.")
+	fmt.Println("remove {keys,}\t=>\tAttempts to delete all the specified keys if the simulations are not being used.\t")
+	fmt.Println("remove all\t=>\tSame as above, except does this check on all simulations.")
+}
+
+func removeKey(keys []string) {
+	// No point running when no keys are specified
+	if len(keys) == 0 {
+		return
+	}
+
+	// Keyword "all" can be passed to attempt deletion of all keys
+	if keys[0] == "all" {
+		keys = []string{}
+		for key := range simulations {
+			keys = append(keys, strconv.Itoa(key))
+		}
+	}
+
+	for i, value := range keys {
+		// Get the key
+		key, err := strconv.Atoi(value)
+		if err != nil {
+			fmt.Println("Key given was not valid int.")
+			keys = append(keys[:i], keys[i+1:]...)
+			continue
+		}
+
+		// Get the sim
+		sim, exists := simulations[key]
+		if !exists {
+			fmt.Println("Key given was not a valid simulation.")
+			keys = append(keys[:i], keys[i+1:]...)
+			continue
+		}
+
+		// Check whether it is active
+		sim.active = false
+	}
+
+	// Waits for all simulations, instead of waiting per sim
+	fmt.Println("Waiting for simulations to respond.")
+	time.Sleep(time.Second * 5)
+
+	// allows the user to delete multiple keys in one command
+	for _, value := range keys {
+		key, _ := strconv.Atoi(value)
+		sim := simulations[key]
+		if !sim.active {
+			// Delete it
+			delete(simulations, key)
+			fmt.Println("Successfully deleted key " + value + ".")
+		} else {
+			fmt.Println("Simulation " + value + " was still active.")
+		}
+	}
+	fmt.Println("Done deletion.")
+}
+
+func limit() {
+	for _, sim := range simulations {
+		if len(sim.allGrass) > 150 {
+			sim.allGrass = sim.allGrass[:100]
+		}
+		if len(sim.allSheep) > 150 {
+			sim.allSheep = sim.allSheep[:100]
+		}
+		if len(sim.allWolves) > 150 {
+			sim.allWolves = sim.allWolves[:100]
+		}
+	}
+	fmt.Println("Simulations successfully limited.")
 }

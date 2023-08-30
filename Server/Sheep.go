@@ -12,22 +12,11 @@ type Sheep struct {
 	energy       int
 	angle        float64
 	mateCooldown int
+	alive        bool
 }
 
 // Look between this file and the wolf file for explanations, as the code is very similar.
 const sheepEnergy int = 3600
-const sheepSpeed float64 = 5
-const sheepSize int = 25
-const sheepRandWeight float32 = float32(1) / 100
-const sheepMateBarrier int = 1800
-const sheepMateLoss int = 900
-const sheepMatePartnerCooldown int = 240
-const sheepMateChildCooldown int = 360
-const sheepEnergyLoss int = 100
-const sheepEnergyGive int = 80
-const sheepChildEnergy int = 2 * sheepMateLoss
-const sheepMaxAmt int = 300
-const sheepViewDis float64 = 100
 
 // Methods
 func (shp *Sheep) update(state *State) bool {
@@ -51,7 +40,7 @@ func (shp *Sheep) update(state *State) bool {
 	if boolOutput[0] {
 		shp.bite(state)
 	}
-	shp.move(floatOutput[1])
+	shp.move(state, floatOutput[1])
 	shp.turn(floatOutput[2])
 	if boolOutput[3] {
 		shp.mate(state)
@@ -60,7 +49,8 @@ func (shp *Sheep) update(state *State) bool {
 	// Reset
 	shp.brain.set()
 
-	return shp.energy > 0
+	shp.alive = shp.energy > 0
+	return shp.alive
 }
 
 // Input
@@ -69,14 +59,14 @@ func (shp *Sheep) grassPos(state *State) {
 	var x, y int
 
 	// Maximum distance
-	var d float64 = sheepViewDis
+	var d float64 = state.config.sheepViewDis * state.config.sheepViewDis
 
 	for i := 0; i < len(state.allGrass); i++ {
 		x = state.allGrass[i].x - shp.x
 		y = state.allGrass[i].y - shp.y
 
 		// Pythagoras
-		tempDis = math.Sqrt(math.Pow(float64(x), 2) + math.Pow(float64(y), 2))
+		tempDis = math.Pow(float64(x), 2) + math.Pow(float64(y), 2)
 
 		// Get the shortest distance
 		if tempDis < d {
@@ -85,10 +75,11 @@ func (shp *Sheep) grassPos(state *State) {
 	}
 
 	// Should now be between -1 and 1
-	tempDis /= sheepViewDis
+	tempDis = math.Sqrt(tempDis)
+	tempDis /= state.config.sheepViewDis
 
 	// Range of sight (the sheep can only see so far)
-	if tempDis >= 1 || tempDis <= -1 {
+	if tempDis >= 1 {
 		return
 	}
 
@@ -99,18 +90,19 @@ func (shp *Sheep) grassPos(state *State) {
 func (shp *Sheep) sheepPos(state *State) {
 	var tempDis float64
 	var x, y int
-	var d float64 = sheepViewDis
+	var d float64 = state.config.sheepViewDis * state.config.sheepViewDis
 
 	for i := 0; i < len(state.allSheep); i++ {
 		x = state.allSheep[i].x - shp.x
 		y = state.allSheep[i].y - shp.y
-		tempDis = math.Sqrt(math.Pow(float64(x), 2) + math.Pow(float64(y), 2))
+		tempDis = math.Pow(float64(x), 2) + math.Pow(float64(y), 2)
 		if tempDis < d {
 			d = tempDis
 		}
 	}
-	tempDis /= sheepViewDis
-	if tempDis >= 1 || tempDis <= -1 {
+	tempDis = math.Sqrt(tempDis)
+	tempDis /= state.config.sheepViewDis
+	if tempDis >= 1 {
 		return
 	}
 	shp.brain.inputs[1].num = float32(tempDis)
@@ -119,18 +111,19 @@ func (shp *Sheep) sheepPos(state *State) {
 func (shp *Sheep) wolfPos(state *State) {
 	var tempDis float64
 	var x, y int
-	var d float64 = sheepViewDis
+	var d float64 = state.config.sheepViewDis * state.config.sheepViewDis
 
 	for i := 0; i < len(state.allWolves); i++ {
 		x = state.allWolves[i].x - shp.x
 		y = state.allWolves[i].y - shp.y
-		tempDis = math.Sqrt(math.Pow(float64(x), 2) + math.Pow(float64(y), 2))
+		tempDis = math.Pow(float64(x), 2) + math.Pow(float64(y), 2)
 		if tempDis < d {
 			d = tempDis
 		}
 	}
-	tempDis /= sheepViewDis
-	if tempDis >= 1 || tempDis <= -1 {
+	tempDis = math.Sqrt(tempDis)
+	tempDis /= state.config.sheepViewDis
+	if tempDis >= 1 {
 		return
 	}
 	shp.brain.inputs[2].num = float32(tempDis)
@@ -141,14 +134,14 @@ func (shp *Sheep) grassAngle(state *State) {
 	var x, y int
 
 	// Maximum distance
-	var d float64 = sheepViewDis
+	var d float64 = state.config.sheepViewDis * state.config.sheepViewDis
 
 	for i := 0; i < len(state.allGrass); i++ {
 		x = state.allGrass[i].x - shp.x
 		y = state.allGrass[i].y - shp.y
 
 		// Pythagoras
-		tempDis = math.Sqrt(math.Pow(float64(x), 2) + math.Pow(float64(y), 2))
+		tempDis = math.Pow(float64(x), 2) + math.Pow(float64(y), 2)
 
 		// Get the shortest distance
 		if tempDis < d {
@@ -157,10 +150,11 @@ func (shp *Sheep) grassAngle(state *State) {
 	}
 
 	// Should now be between -1 and 1
-	tempDis /= sheepViewDis
+	tempDis = math.Sqrt(tempDis)
+	tempDis /= state.config.sheepViewDis
 
 	// Range of sight
-	if tempDis >= 1 || tempDis <= -1 {
+	if tempDis >= 1 {
 		return
 	}
 
@@ -179,19 +173,20 @@ func (shp *Sheep) grassAngle(state *State) {
 func (shp *Sheep) sheepAngle(state *State) {
 	var tempDis float64
 	var x, y int
-	var d float64 = sheepViewDis
+	var d float64 = state.config.sheepViewDis * state.config.sheepViewDis
 
 	for i := 0; i < len(state.allSheep); i++ {
 		x = state.allSheep[i].x - shp.x
 		y = state.allSheep[i].y - shp.y
-		tempDis = math.Sqrt(math.Pow(float64(x), 2) + math.Pow(float64(y), 2))
+		tempDis = math.Pow(float64(x), 2) + math.Pow(float64(y), 2)
 		if tempDis < d {
 			d = tempDis
 		}
 	}
-	tempDis /= sheepViewDis
+	tempDis = math.Sqrt(tempDis)
+	tempDis /= state.config.sheepViewDis
 
-	if tempDis >= 1 || tempDis <= -1 {
+	if tempDis >= 1 {
 		return
 	}
 	ang := math.Acos(1 / tempDis)
@@ -206,19 +201,20 @@ func (shp *Sheep) sheepAngle(state *State) {
 func (shp *Sheep) wolfAngle(state *State) {
 	var tempDis float64
 	var x, y int
-	var d float64 = sheepViewDis
+	var d float64 = state.config.sheepViewDis * state.config.sheepViewDis
 
 	for i := 0; i < len(state.allWolves); i++ {
 		x = state.allWolves[i].x - shp.x
 		y = state.allWolves[i].y - shp.y
-		tempDis = math.Sqrt(math.Pow(float64(x), 2) + math.Pow(float64(y), 2))
+		tempDis = math.Pow(float64(x), 2) + math.Pow(float64(y), 2)
 		if tempDis < d {
 			d = tempDis
 		}
 	}
-	tempDis /= sheepViewDis
+	tempDis = math.Sqrt(tempDis)
+	tempDis /= state.config.sheepViewDis
 
-	if tempDis >= 1 || tempDis <= -1 {
+	if tempDis >= 1 {
 		return
 	}
 	ang := math.Acos(1 / tempDis)
@@ -232,39 +228,41 @@ func (shp *Sheep) wolfAngle(state *State) {
 
 // Output
 func (shp *Sheep) bite(state *State) {
+	wide := shp.x + state.config.sheepSize
+	high := shp.y + state.config.sheepSize
 	for i := 0; i < len(state.allGrass); i++ {
 		// Check collision
-		if shp.x > state.allGrass[i].x+grassSize {
+		if shp.x > state.allGrass[i].x+state.config.grassSize {
 			continue
 		}
-		if shp.x+sheepSize < state.allGrass[i].x {
+		if wide < state.allGrass[i].x {
 			continue
 		}
-		if shp.y > state.allGrass[i].y+grassSize {
+		if shp.y > state.allGrass[i].y+state.config.grassSize {
 			continue
 		}
-		if shp.y+sheepSize < state.allGrass[i].y {
+		if high < state.allGrass[i].y {
 			continue
 		}
 
 		// Eat
-		shp.energy += state.allGrass[i].giveEnergy()
+		shp.energy += state.allGrass[i].giveEnergy(state)
 		break
 	}
 }
 
-func (shp *Sheep) move(dis float32) {
-	shp.x += int(math.Cos(shp.angle) * sheepSpeed * float64(dis))
-	shp.y += int(math.Sin(shp.angle) * sheepSpeed * float64(dis))
+func (shp *Sheep) move(state *State, dis float32) {
+	shp.x += int(math.Cos(shp.angle) * state.config.sheepSpeed * float64(dis))
+	shp.y += int(math.Sin(shp.angle) * state.config.sheepSpeed * float64(dis))
 
 	// Stay within bounds
-	if shp.x > 1_000 {
-		shp.x = 1_000
+	if shp.x > 1_000-state.config.sheepSize {
+		shp.x = 1_000 - state.config.sheepSize
 	} else if shp.x < 0 {
 		shp.x = 0
 	}
-	if shp.y > 1_000 {
-		shp.y = 1_000
+	if shp.y > 1_000-state.config.sheepSize {
+		shp.y = 1_000 - state.config.sheepSize
 	} else if shp.y < 0 {
 		shp.y = 0
 	}
@@ -275,36 +273,38 @@ func (shp *Sheep) turn(ang float32) {
 }
 
 func (shp *Sheep) mate(state *State) {
-	if len(state.allSheep) >= sheepMaxAmt {
+	if len(state.allSheep) >= state.config.sheepMaxAmt {
 		return
 	}
 
 	// Restrictions
-	if !shp.canMate() {
+	if !shp.canMate(state) {
 		return
 	}
 
 	foundPartner := false
 	var partner *Sheep
 
+	wide := shp.x + state.config.wolfSize
+	high := shp.y + state.config.wolfSize
 	for i := 0; i < len(state.allSheep); i++ {
 		// Check collision
-		if shp.x > state.allSheep[i].x+sheepSize {
+		if shp.x > state.allSheep[i].x+state.config.sheepSize {
 			continue
 		}
-		if shp.x+sheepSize < state.allSheep[i].x {
+		if wide < state.allSheep[i].x {
 			continue
 		}
-		if shp.y > state.allSheep[i].y+sheepSize {
+		if shp.y > state.allSheep[i].y+state.config.sheepSize {
 			continue
 		}
-		if shp.y+sheepSize < state.allSheep[i].y {
+		if high < state.allSheep[i].y {
 			continue
 		}
 
 		partner = state.allSheep[i]
 		// Partner restrictions
-		if !partner.canMate() {
+		if !partner.canMate(state) {
 			continue
 		}
 		foundPartner = true
@@ -321,18 +321,19 @@ func (shp *Sheep) mate(state *State) {
 
 	// Take from the parents and stop them from doing it every frame
 	// by giving them a cooldown.
-	shp.energy -= sheepMateLoss
-	partner.energy -= sheepMateLoss
-	shp.mateCooldown = sheepMatePartnerCooldown
-	partner.mateCooldown = sheepMatePartnerCooldown
+	shp.energy -= state.config.sheepMateLoss
+	partner.energy -= state.config.sheepMateLoss
+	shp.mateCooldown = state.config.sheepMatePartnerCooldown
+	partner.mateCooldown = state.config.sheepMatePartnerCooldown
 
 	child := &Sheep{
 		shp.x + rand.Intn(20) - 10, // A position near the parent
 		shp.y + rand.Intn(20) - 10,
 		createBlankBrain(),
-		sheepChildEnergy,
+		state.config.sheepChildEnergy,
 		0,
-		sheepMateChildCooldown,
+		state.config.sheepMateChildCooldown,
+		true,
 	}
 
 	// Copying over brain information into the child
@@ -346,7 +347,7 @@ func (shp *Sheep) mate(state *State) {
 			}
 
 			// Random chance to get something completely different
-			if rand.Float32() < sheepRandWeight {
+			if rand.Float32() < state.config.sheepRandWeight {
 				child.brain.inputs[i].weights[j] = randWeight()
 			}
 		}
@@ -362,7 +363,7 @@ func (shp *Sheep) mate(state *State) {
 						child.brain.layers[i].nodes[j].weights = append(child.brain.layers[i].nodes[j].weights, partner.brain.layers[i].nodes[j].weights[k])
 					}
 
-					if rand.Float32() < sheepRandWeight {
+					if rand.Float32() < state.config.sheepRandWeight {
 						child.brain.layers[i].nodes[j].weights[k] = randWeight()
 					}
 				}
@@ -374,7 +375,7 @@ func (shp *Sheep) mate(state *State) {
 						child.brain.layers[i].nodes[j].weights = append(child.brain.layers[i].nodes[j].weights, partner.brain.layers[i].nodes[j].weights[k])
 					}
 
-					if rand.Float32() < sheepRandWeight {
+					if rand.Float32() < state.config.sheepRandWeight {
 						child.brain.layers[i].nodes[j].weights[k] = randWeight()
 					}
 				}
@@ -385,8 +386,8 @@ func (shp *Sheep) mate(state *State) {
 	state.allSheep = append(state.allSheep, child) // Make this sheep part of the simulation
 }
 
-func (shp *Sheep) canMate() bool {
-	if shp.energy < sheepMateBarrier {
+func (shp *Sheep) canMate(state *State) bool {
+	if shp.energy < state.config.sheepMateBarrier {
 		return false
 	}
 	if shp.mateCooldown > 0 {
@@ -395,7 +396,7 @@ func (shp *Sheep) canMate() bool {
 	return true
 }
 
-func (shp *Sheep) giveEnergy() int {
-	shp.energy -= sheepEnergyLoss
-	return sheepEnergyGive
+func (shp *Sheep) giveEnergy(state *State) int {
+	shp.energy -= state.config.sheepEnergyLoss
+	return state.config.sheepEnergyGive
 }

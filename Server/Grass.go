@@ -4,19 +4,17 @@ type Grass struct {
 	x      int
 	y      int
 	energy int
+	alive  bool
 }
 
-const grassEnergy int = 10000   // How much energy grass has when made
-const grassSize int = 25        // How big grass is
-const grassEnergyLoss int = 100 // How much enrgy grass loses when eaten
-const grassEnergyGive int = 90  // How much energy grass gives to the sheep when eaten
-const grassMaxAmt int = 300     // The maximum amount of grass allowed in the simulation
+const grassEnergy int = 10000 // How much energy grass has when the simulation starts
 
 func (grs *Grass) update(state *State) bool {
-	return grs.energy > 0
+	grs.alive = grs.energy > 0
+	return grs.alive
 }
 
-func (grs *Grass) giveEnergy() int {
-	grs.energy -= grassEnergyLoss
-	return grassEnergyGive
+func (grs *Grass) giveEnergy(state *State) int {
+	grs.energy -= state.config.grassEnergyLoss
+	return state.config.grassEnergyGive
 }
