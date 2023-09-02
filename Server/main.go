@@ -95,19 +95,27 @@ func createReadout(w http.ResponseWriter, r *http.Request) {
 
 	// <br>s are used for newlines in the HTML
 	outputData := "\""
-	outputData += strconv.Itoa(len(sim.allGrass)) +
+	outputData += "Grass: " + strconv.Itoa(len(sim.allGrass)) +
 		"<br>" +
-		strconv.Itoa(len(sim.allSheep)) +
+		"Sheep: " + strconv.Itoa(len(sim.allSheep)) +
 		"<br>" +
-		strconv.Itoa(len(sim.allWolves)) +
+		"Wolf: " + strconv.Itoa(len(sim.allWolves)) +
 		"<br>" +
-		strconv.Itoa(sim.getEnergy()) +
+		"Energy: " + addCommasToNumber(strconv.Itoa(sim.getEnergy())) +
 		"\""
 	_, err = fmt.Fprint(w, outputData)
 	if err != nil {
 		fmt.Println("Issue occured in response writing.")
 	}
 	fmt.Println("Readout given.")
+}
+
+func addCommasToNumber(num string) string {
+	// Expects a positive integer as its input
+	if len(num) >= 4 {
+		num = num[0:len(num)-4] + "," + num[len(num)-4:len(num)-1]
+	}
+	return num
 }
 
 func removeSimulation(w http.ResponseWriter, r *http.Request) {

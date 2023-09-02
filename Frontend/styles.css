@@ -3,6 +3,8 @@ body {
     margin: 0;
     overflow:hidden;
     font-family: Tahoma;
+    background-color: rgb(32, 32, 32);
+    color: white;
 }
 
 #mainDiv {
@@ -11,8 +13,7 @@ body {
 }
 
 #topDiv {
-    color: whitesmoke;
-    background-color: gray;
+    background-color: rgb(64, 64, 64);
     width: 100vw;
     height: 10vh;
     text-align: center;
@@ -23,17 +24,15 @@ h1 {
 }
 
 #leftDiv {
-    background-color: darkgray;
     width: 25vw;
-    height: 90vh;
+    height: 50vw;
     float: left;
     text-align: center;
 }
 
 #rightDiv {
-    background-color: darkgray;
     width: 25vw;
-    height: 90vh;
+    height: 50vw;
     float: right;
     text-align: center;
 }
@@ -47,24 +46,36 @@ h1 {
 }
 
 button {
+    color: white;
+    background-color: rgb(64, 64, 64);
     border-radius: 10px;
     border-style: hidden;
     width: 12vw;
     height: 6.8vh;
     margin: 5px;
-    font-size: 5.5vh;
+    font-size: 5vh;
 }
 
-#divStats {
-    color: white;
-    background-color: midnightblue;
-}
-
-#divReadout {
-    color: white;
-    background-color: midnightblue;
+button:hover {
+    background-color: rgb(48, 48, 48);
 }
 
 input {
-    width: 200px;
+    color: white;
+    background-color: rgb(64, 64, 64);
+    width: 80px;
+    border-style: none;
+}
+
+h2 {
+    margin-block-start: 0;
+    margin-bottom: 1px;
+}
+
+#buttonBack {
+    display: inline-block;
+}
+
+p {
+    font-size: 12px;
 }

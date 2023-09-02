@@ -252,8 +252,9 @@ func (shp *Sheep) bite(state *State) {
 }
 
 func (shp *Sheep) move(state *State, dis float32) {
-	shp.x += int(math.Cos(shp.angle) * state.config.sheepSpeed * float64(dis))
-	shp.y += int(math.Sin(shp.angle) * state.config.sheepSpeed * float64(dis))
+	degAng := shp.angle * math.Pi / 180
+	shp.x += int(math.Cos(degAng) * state.config.sheepSpeed * float64(dis))
+	shp.y += int(math.Sin(degAng) * state.config.sheepSpeed * float64(dis))
 
 	// Stay within bounds
 	if shp.x > 1_000-state.config.sheepSize {
@@ -269,7 +270,7 @@ func (shp *Sheep) move(state *State, dis float32) {
 }
 
 func (shp *Sheep) turn(ang float32) {
-	shp.angle += float64(ang)
+	shp.angle += float64(ang) * 5
 }
 
 func (shp *Sheep) mate(state *State) {

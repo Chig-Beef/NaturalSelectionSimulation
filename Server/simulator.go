@@ -28,8 +28,8 @@ func (state *State) step() {
 
 			// Generate coordinates and give the grass energy, then allocate it
 			state.allGrass = append(state.allGrass, &Grass{
-				rand.Intn(1_000),
-				rand.Intn(1_000),
+				rand.Intn(1_000 - state.config.grassSize),
+				rand.Intn(1_000 - state.config.grassSize),
 				state.config.grassEnergy,
 				true,
 			})
@@ -47,15 +47,9 @@ func (state *State) step() {
 	tempWolves := make([]*Wolf, count) // Create temporary slice
 	dif := 0
 	for i := 0; i < count; i++ {
-		// This is a while loop (golang only has the for keyword)
+		// This is a while loops (golang only has the for keyword)
 		for !state.allWolves[i+dif].alive {
 			dif++
-			if i+dif >= len(state.allWolves) {
-				break
-			}
-		}
-		if i+dif >= len(state.allWolves) {
-			break
 		}
 		tempWolves[i] = state.allWolves[i+dif]
 	}
@@ -73,12 +67,6 @@ func (state *State) step() {
 	for i := 0; i < count; i++ {
 		for !state.allSheep[i+dif].alive {
 			dif++
-			if i+dif >= len(state.allSheep) {
-				break
-			}
-		}
-		if i+dif >= len(state.allSheep) {
-			break
 		}
 		tempSheep[i] = state.allSheep[i+dif]
 	}
@@ -96,12 +84,6 @@ func (state *State) step() {
 	for i := 0; i < count; i++ {
 		for !state.allGrass[i+dif].alive {
 			dif++
-			if i+dif >= len(state.allGrass) {
-				break
-			}
-		}
-		if i+dif >= len(state.allGrass) {
-			break
 		}
 		tempGrass[i] = state.allGrass[i+dif]
 	}
@@ -176,8 +158,8 @@ func initializeGrassSlice() []*Grass {
 
 	for i := 0; i < startingGrass; i++ {
 		grassSlice = append(grassSlice, &Grass{
-			rand.Intn(1_000),
-			rand.Intn(1_000),
+			rand.Intn(1_000 - 25),
+			rand.Intn(1_000 - 25),
 			grassEnergy,
 			true,
 		})
@@ -191,8 +173,8 @@ func initializeWolfSlice() []*Wolf {
 
 	for i := 0; i < startingWolf; i++ {
 		wolfSlice = append(wolfSlice, &Wolf{
-			rand.Intn(1_000),
-			rand.Intn(1_000),
+			rand.Intn(1_000 - 25),
+			rand.Intn(1_000 - 25),
 			createRandomConnections(createBlankBrain()),
 			wolfEnergy,
 			0,
@@ -209,8 +191,8 @@ func initializeSheepSlice() []*Sheep {
 
 	for i := 0; i < startingSheep; i++ {
 		sheepSlice = append(sheepSlice, &Sheep{
-			rand.Intn(1_000),
-			rand.Intn(1_000),
+			rand.Intn(1_000 - 25),
+			rand.Intn(1_000 - 25),
 			createRandomConnections(createBlankBrain()),
 			sheepEnergy,
 			0,

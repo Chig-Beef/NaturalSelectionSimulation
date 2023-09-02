@@ -247,8 +247,9 @@ func (wlf *Wolf) bite(state *State) {
 }
 
 func (wlf *Wolf) move(state *State, dis float32) {
-	wlf.x += int(math.Cos(wlf.angle) * state.config.wolfSpeed * float64(dis))
-	wlf.y += int(math.Sin(wlf.angle) * state.config.wolfSpeed * float64(dis))
+	degAng := wlf.angle * math.Pi / 180
+	wlf.x += int(math.Cos(degAng) * state.config.wolfSpeed * float64(dis))
+	wlf.y += int(math.Sin(degAng) * state.config.wolfSpeed * float64(dis))
 	if wlf.x > 1_000-state.config.wolfSize {
 		wlf.x = 1_000 - state.config.wolfSize
 	} else if wlf.x < 0 {
@@ -262,7 +263,7 @@ func (wlf *Wolf) move(state *State, dis float32) {
 }
 
 func (wlf *Wolf) turn(ang float32) {
-	wlf.angle += float64(ang)
+	wlf.angle += float64(ang) * 5
 }
 
 func (wlf *Wolf) mate(state *State) {

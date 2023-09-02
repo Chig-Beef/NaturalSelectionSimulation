@@ -8,6 +8,7 @@ let simData = [];
 let sheepSize = 25;
 let wolfSize = 25;
 let grassSize = 25;
+const year = 120;
 
 async function setup() {
     const cnv = createCanvas(width, width); // The little window in the middle of the simulation
@@ -35,7 +36,7 @@ async function draw() {
     const sheep = data[2];
 
     // Show information
-    divStats.innerHTML = "Grass: " + grass.length + "<br>Wolf: " + wolf.length + "<br>Sheep: " + sheep.length + "<br>Total: " + (grass.length + wolf.length + sheep.length) + "<br>Time Spent: " + Math.round(simTime / 3600) + " Years";
+    divStats.innerHTML = "Grass: " + grass.length + "<br>Wolf: " + wolf.length + "<br>Sheep: " + sheep.length + "<br>Total: " + (grass.length + wolf.length + sheep.length) + "<br>Time Spent: " + Math.round(simTime / year) + " Years";
 
     background(128, 64, 0); // Makes the little window blank
 
@@ -94,128 +95,128 @@ buttonRestart.onclick = async () => {
 buttonReadout.onclick = async () => {
     const response = await fetch("http://localhost:9090/readout/" + unqId);
     const data = await response.json();
-    divReadout.innerHTML = data;
+    divReadout.innerHTML = data + "<br>Time: " + (simTime/year);
 }
 
 buttonConfig.onclick = async () => {
-    const sheepData = divControlsRight.children[1].children;
-    const wolfData = divControlsLeft.children[0].children;
-    const grassData = divControlsLeft.children[1].children;
+    const sheepData = divControlsLeft.children[0].children;
+    const wolfData = divControlsRight.children[1].children;
+    const grassData = divControlsRight.children[2].children;
 
     let newConfig = [];
     let temp;
 
     // Sheep
-    temp = sheepData[1].children[0].value;
+    temp = sheepData[2].children[0].value;
     if (!checkInRange(temp, 1, 100)) return;
     newConfig.push(parseFloat(temp));
 
-    temp = sheepData[3].children[0].value;
+    temp = sheepData[4].children[0].value;
     if (!checkInRange(temp, 1, 100)) return;
     sheepSize = parseInt(temp)
     newConfig.push(sheepSize);
 
-    temp = sheepData[5].children[0].value;
+    temp = sheepData[6].children[0].value;
     if (!checkInRange(temp, 0, 1)) return;
     newConfig.push(parseFloat(temp));
 
-    temp = sheepData[7].children[0].value;
+    temp = sheepData[8].children[0].value;
     if (!checkInRange(temp, 1, 10000)) return;
     newConfig.push(parseInt(temp));
 
-    temp = sheepData[9].children[0].value;
+    temp = sheepData[10].children[0].value;
     if (!checkInRange(temp, 1, 100000)) return;
     newConfig.push(parseInt(temp));
 
-    temp = sheepData[11].children[0].value;
+    temp = sheepData[12].children[0].value;
     if (!checkInRange(temp, 1, 10000)) return;
     newConfig.push(parseInt(temp));
 
-    temp = sheepData[13].children[0].value;
+    temp = sheepData[14].children[0].value;
     if (!checkInRange(temp, 1, 10000)) return;
     newConfig.push(parseInt(temp));
 
-    temp = sheepData[15].children[0].value;
+    temp = sheepData[16].children[0].value;
     if (!checkInRange(temp, 1, 1000)) return;
     newConfig.push(parseInt(temp));
 
-    temp = sheepData[17].children[0].value;
+    temp = sheepData[18].children[0].value;
     if (!checkInRange(temp, 1, 1000)) return;
     newConfig.push(parseInt(temp));
 
-    temp = sheepData[19].children[0].value;
+    temp = sheepData[20].children[0].value;
     if (!checkInRange(temp, 1, 10000)) return;
     newConfig.push(parseInt(temp));
 
-    temp = sheepData[21].children[0].value;
+    temp = sheepData[22].children[0].value;
     if (!checkInRange(temp, 1, 10000)) return;
     newConfig.push(parseInt(temp));
 
-    temp = sheepData[23].children[0].value;
+    temp = sheepData[24].children[0].value;
     if (!checkInRange(temp, 1, 150)) return;
     newConfig.push(parseFloat(temp));
 
     // Wolves
-    temp = wolfData[1].children[0].value;
+    temp = wolfData[2].children[0].value;
     if (!checkInRange(temp, 1, 100)) return;
     newConfig.push(parseFloat(temp));
 
-    temp = wolfData[3].children[0].value;
+    temp = wolfData[4].children[0].value;
     if (!checkInRange(temp, 1, 100)) return;
     wolfSize = parseInt(temp);
     newConfig.push(wolfSize);
 
-    temp = wolfData[5].children[0].value;
+    temp = wolfData[6].children[0].value;
     if (!checkInRange(temp, 0, 1)) return;
     newConfig.push(parseFloat(temp));
 
-    temp = wolfData[7].children[0].value;
+    temp = wolfData[8].children[0].value;
     if (!checkInRange(temp, 1, 10000)) return;
     newConfig.push(parseInt(temp));
 
-    temp = wolfData[9].children[0].value;
+    temp = wolfData[10].children[0].value;
     if (!checkInRange(temp, 1, 10000)) return;
     newConfig.push(parseInt(temp));
 
-    temp = wolfData[11].children[0].value;
+    temp = wolfData[12].children[0].value;
     if (!checkInRange(temp, 1, 10000)) return;
     newConfig.push(parseInt(temp));
 
-    temp = wolfData[13].children[0].value;
+    temp = wolfData[14].children[0].value;
     if (!checkInRange(temp, 1, 10000)) return;
     newConfig.push(parseInt(temp));
 
-    temp = wolfData[15].children[0].value;
+    temp = wolfData[16].children[0].value;
     if (!checkInRange(temp, 1, 10000)) return;
     newConfig.push(parseInt(temp));
 
-    temp = wolfData[17].children[0].value;
+    temp = wolfData[18].children[0].value;
     if (!checkInRange(temp, 1, 1000)) return;
     newConfig.push(parseInt(temp));
 
-    temp = wolfData[19].children[0].value;
+    temp = wolfData[20].children[0].value;
     if (!checkInRange(temp, 1, 150)) return;
     newConfig.push(parseFloat(temp));
 
     // Grass
-    temp = grassData[1].children[0].value;
+    temp = grassData[2].children[0].value;
     if (!checkInRange(temp, 1, 20000)) return;
     newConfig.push(parseFloat(temp));
 
-    temp = grassData[3].children[0].value;
+    temp = grassData[4].children[0].value;
     if (!checkInRange(temp, 1, 100)) return;
     grassSize = parseInt(temp)
     newConfig.push(grassSize);
 
-    temp = grassData[5].children[0].value;
+    temp = grassData[6].children[0].value;
     if (!checkInRange(temp, 1, 200)) return;
     newConfig.push(parseFloat(temp));
 
-    temp = grassData[7].children[0].value;
+    temp = grassData[8].children[0].value;
     if (!checkInRange(temp, 1, 2000)) return;
     newConfig.push(parseFloat(temp));
 
-    temp = grassData[9].children[0].value;
+    temp = grassData[10].children[0].value;
     if (!checkInRange(temp, 1, 1000)) return;
     newConfig.push(parseFloat(temp));
 
