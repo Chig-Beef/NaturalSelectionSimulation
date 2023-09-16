@@ -48,7 +48,7 @@ func makeDefaultConfig() Config {
 		100,
 		80,
 		1800,
-		300,
+		makeMaxAmt(),
 		100,
 		5,
 		25,
@@ -58,13 +58,13 @@ func makeDefaultConfig() Config {
 		240,
 		360,
 		1800,
-		300,
+		makeMaxAmt(),
 		100,
 		10_000,
 		25,
 		100,
 		90,
-		300,
+		makeMaxAmt(),
 	}
 }
 
@@ -143,6 +143,9 @@ func convConfigFromStr(data string) (Config, error) {
 		return newConfig, err
 	}
 	newConfig.sheepMaxAmt = newInt
+	if newConfig.sheepMaxAmt > max_objects {
+		newConfig.sheepMaxAmt = max_objects
+	}
 
 	newFloat, err = strconv.ParseFloat(fields[11], 64)
 	if err != nil {
@@ -203,6 +206,9 @@ func convConfigFromStr(data string) (Config, error) {
 		return newConfig, err
 	}
 	newConfig.wolfMaxAmt = newInt
+	if newConfig.wolfMaxAmt > max_objects {
+		newConfig.wolfMaxAmt = max_objects
+	}
 
 	newFloat, err = strconv.ParseFloat(fields[21], 64)
 	if err != nil {
@@ -239,15 +245,17 @@ func convConfigFromStr(data string) (Config, error) {
 		return newConfig, err
 	}
 	newConfig.grassMaxAmt = newInt
+	if newConfig.grassMaxAmt > max_objects {
+		newConfig.grassMaxAmt = max_objects
+	}
 
 	// Return
 	return newConfig, nil
 }
 
-func splitSplice(data []string, delim string) [][]string {
-	output := make([][]string, len(data))
-	for i := 0; i < len(data); i++ {
-		output[i] = strings.Split(data[i], delim)
+func makeMaxAmt() int {
+	if 300 > max_objects {
+		return max_objects
 	}
-	return output
+	return 300
 }

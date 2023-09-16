@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"math"
 	"math/rand"
 )
@@ -24,12 +25,9 @@ func (shp *Sheep) update(state *State) bool {
 	shp.mateCooldown--
 
 	// Get the inputs
-	shp.grassPos(state)
-	shp.sheepPos(state)
-	shp.wolfPos(state)
-	shp.grassAngle(state)
-	shp.sheepAngle(state)
-	shp.wolfAngle(state)
+	shp.grassPosAndAngle(state)
+	shp.sheepPosAndAngle(state)
+	shp.wolfPosAndAngle(state)
 	shp.brain.inputs[6].num = 1 // constant
 
 	// Calculate
@@ -54,9 +52,10 @@ func (shp *Sheep) update(state *State) bool {
 }
 
 // Input
-func (shp *Sheep) grassPos(state *State) {
+func (shp *Sheep) grassPosAndAngle(state *State) {
 	var tempDis float64
 	var x, y int
+	var minX int
 
 	// Maximum distance
 	var d float64 = state.config.sheepViewDis * state.config.sheepViewDis
@@ -71,6 +70,7 @@ func (shp *Sheep) grassPos(state *State) {
 		// Get the shortest distance
 		if tempDis < d {
 			d = tempDis
+			minX = x
 		}
 	}
 
@@ -83,34 +83,52 @@ func (shp *Sheep) grassPos(state *State) {
 		return
 	}
 
+	// Calculating angle as weight
+	cos := float64(minX) / tempDis
+	if tempDis == 0 {
+		cos = 0
+	}
 	// Put this input in the brain
 	shp.brain.inputs[0].num = float32(tempDis)
+	shp.brain.inputs[3].num = float32(cos)
 }
 
-func (shp *Sheep) sheepPos(state *State) {
+func (shp *Sheep) sheepPosAndAngle(state *State) {
 	var tempDis float64
 	var x, y int
+	var minX int
 	var d float64 = state.config.sheepViewDis * state.config.sheepViewDis
 
 	for i := 0; i < len(state.allSheep); i++ {
+		if state.allSheep[i] == shp {
+			continue
+		}
+
 		x = state.allSheep[i].x - shp.x
 		y = state.allSheep[i].y - shp.y
 		tempDis = math.Pow(float64(x), 2) + math.Pow(float64(y), 2)
 		if tempDis < d {
 			d = tempDis
+			minX = x
 		}
 	}
 	tempDis = math.Sqrt(tempDis)
 	tempDis /= state.config.sheepViewDis
 	if tempDis >= 1 {
 		return
+	}
+	cos := float64(minX) / tempDis
+	if tempDis == 0 {
+		cos = 0
 	}
 	shp.brain.inputs[1].num = float32(tempDis)
+	shp.brain.inputs[4].num = float32(cos)
 }
 
-func (shp *Sheep) wolfPos(state *State) {
+func (shp *Sheep) wolfPosAndAngle(state *State) {
 	var tempDis float64
 	var x, y int
+	var minX int
 	var d float64 = state.config.sheepViewDis * state.config.sheepViewDis
 
 	for i := 0; i < len(state.allWolves); i++ {
@@ -119,111 +137,23 @@ func (shp *Sheep) wolfPos(state *State) {
 		tempDis = math.Pow(float64(x), 2) + math.Pow(float64(y), 2)
 		if tempDis < d {
 			d = tempDis
+			minX = x
 		}
 	}
 	tempDis = math.Sqrt(tempDis)
 	tempDis /= state.config.sheepViewDis
 	if tempDis >= 1 {
 		return
+	}
+	cos := float64(minX) / tempDis
+	if tempDis == 0 {
+		cos = 0
+	}
+	if math.IsNaN(cos) {
+		fmt.Println("What the Heck")
 	}
 	shp.brain.inputs[2].num = float32(tempDis)
-}
-
-func (shp *Sheep) grassAngle(state *State) {
-	var tempDis float64
-	var x, y int
-
-	// Maximum distance
-	var d float64 = state.config.sheepViewDis * state.config.sheepViewDis
-
-	for i := 0; i < len(state.allGrass); i++ {
-		x = state.allGrass[i].x - shp.x
-		y = state.allGrass[i].y - shp.y
-
-		// Pythagoras
-		tempDis = math.Pow(float64(x), 2) + math.Pow(float64(y), 2)
-
-		// Get the shortest distance
-		if tempDis < d {
-			d = tempDis
-		}
-	}
-
-	// Should now be between -1 and 1
-	tempDis = math.Sqrt(tempDis)
-	tempDis /= state.config.sheepViewDis
-
-	// Range of sight
-	if tempDis >= 1 {
-		return
-	}
-
-	ang := math.Acos(1 / tempDis)
-	sign := math.Asin(1 / tempDis)
-
-	ang /= math.Pi
-	if sign < 0 {
-		ang = -ang
-	}
-
-	// Put this input in the brain
-	shp.brain.inputs[3].num = float32(ang)
-}
-
-func (shp *Sheep) sheepAngle(state *State) {
-	var tempDis float64
-	var x, y int
-	var d float64 = state.config.sheepViewDis * state.config.sheepViewDis
-
-	for i := 0; i < len(state.allSheep); i++ {
-		x = state.allSheep[i].x - shp.x
-		y = state.allSheep[i].y - shp.y
-		tempDis = math.Pow(float64(x), 2) + math.Pow(float64(y), 2)
-		if tempDis < d {
-			d = tempDis
-		}
-	}
-	tempDis = math.Sqrt(tempDis)
-	tempDis /= state.config.sheepViewDis
-
-	if tempDis >= 1 {
-		return
-	}
-	ang := math.Acos(1 / tempDis)
-	sign := math.Asin(1 / tempDis)
-	ang /= math.Pi
-	if sign < 0 {
-		ang = -ang
-	}
-	shp.brain.inputs[4].num = float32(ang)
-}
-
-func (shp *Sheep) wolfAngle(state *State) {
-	var tempDis float64
-	var x, y int
-	var d float64 = state.config.sheepViewDis * state.config.sheepViewDis
-
-	for i := 0; i < len(state.allWolves); i++ {
-		x = state.allWolves[i].x - shp.x
-		y = state.allWolves[i].y - shp.y
-		tempDis = math.Pow(float64(x), 2) + math.Pow(float64(y), 2)
-		if tempDis < d {
-			d = tempDis
-		}
-	}
-	tempDis = math.Sqrt(tempDis)
-	tempDis /= state.config.sheepViewDis
-
-	if tempDis >= 1 {
-		return
-	}
-	ang := math.Acos(1 / tempDis)
-	sign := math.Asin(1 / tempDis)
-	ang /= math.Pi
-	if sign < 0 {
-		ang = -ang
-	}
-	shp.brain.inputs[5].num = float32(ang)
+	shp.brain.inputs[5].num = float32(cos)
 }
 
 // Output
@@ -302,6 +232,9 @@ func (shp *Sheep) mate(state *State) {
 		if high < state.allSheep[i].y {
 			continue
 		}
+		if state.allSheep[i] == shp {
+			continue
+		}
 
 		partner = state.allSheep[i]
 		// Partner restrictions
@@ -314,9 +247,6 @@ func (shp *Sheep) mate(state *State) {
 
 	// Unlucky
 	if !foundPartner {
-		return
-	}
-	if partner == shp {
 		return
 	}
 
@@ -356,8 +286,8 @@ func (shp *Sheep) mate(state *State) {
 
 	for i := 0; i < len(child.brain.layers); i++ {
 		for j := 0; j < len(child.brain.layers[i].nodes); j++ {
-			if child.brain.layers[i].nodes[j].lastLayer {
-				for k := 0; k < len(child.brain.layers[i].nodes[j].linksO); k++ {
+			if !child.brain.layers[i].nodes[j].lastLayer { // Last layer
+				for k := 0; k < len(child.brain.layers[i].nodes[j].linksN); k++ {
 					if rand.Intn(2) == 0 {
 						child.brain.layers[i].nodes[j].weights = append(child.brain.layers[i].nodes[j].weights, shp.brain.layers[i].nodes[j].weights[k])
 					} else {
@@ -368,8 +298,8 @@ func (shp *Sheep) mate(state *State) {
 						child.brain.layers[i].nodes[j].weights[k] = randWeight()
 					}
 				}
-			} else { // Last layer
-				for k := 0; k < len(child.brain.layers[i].nodes[j].linksN); k++ {
+			} else {
+				for k := 0; k < len(child.brain.layers[i].nodes[j].linksO); k++ {
 					if rand.Intn(2) == 0 {
 						child.brain.layers[i].nodes[j].weights = append(child.brain.layers[i].nodes[j].weights, shp.brain.layers[i].nodes[j].weights[k])
 					} else {

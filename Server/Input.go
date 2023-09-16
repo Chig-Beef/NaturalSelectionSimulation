@@ -6,6 +6,7 @@ type Input struct {
 	weights []float32
 }
 
+// Calculate output
 func (input *Input) push() {
 	for i := 0; i < len(input.links); i++ {
 		input.links[i].num += input.num * input.weights[i]
@@ -13,6 +14,7 @@ func (input *Input) push() {
 	}
 }
 
+// Reset to default
 func (input *Input) set() {
 	input.num = 0
 }

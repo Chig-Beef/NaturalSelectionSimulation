@@ -12,7 +12,7 @@ import (
 	This file is the routing logic of the server, and connects everything together in a port for the client
 */
 
-const framerate int = 24
+const framerate int = 10
 
 func main() {
 	// This is asynchronously using the "go" keyword.
@@ -32,13 +32,36 @@ func main() {
 	r.HandleFunc("/remove/{id}", removeSimulation).Methods("GET")
 	r.HandleFunc("/readout/{id}", createReadout).Methods("GET")
 	r.HandleFunc("/config/{id}/{data}", changeConfig).Methods("GET")
+	r.HandleFunc("/exists/{id}", checkExists).Methods("GET")
 	r.PathPrefix("/").Handler(http.FileServer(http.Dir("../Frontend"))) // Getting the regular html
 	http.Handle("/", r)
 
 	http.ListenAndServe(":9090", nil)
 }
 
+func checkExists(w http.ResponseWriter, r *http.Request) {
+	// Get variables from request
+	vars := mux.Vars(r)
+	id := vars["id"]
+
+	// Get the simulation
+	simRequest, err := strconv.Atoi(id)
+	if err != nil {
+		fmt.Println("A simulation request wasn't an integer.")
+		return
+	}
+	_, result := simulations[simRequest]
+	if result {
+		fmt.Fprint(w, "\"true\"")
+		return
+	} else {
+		fmt.Fprint(w, "\"false\"")
+		return
+	}
+}
+
 func changeConfig(w http.ResponseWriter, r *http.Request) {
+
 	// Get variables from request
 	vars := mux.Vars(r)
 	id := vars["id"]
@@ -77,7 +100,6 @@ func createReadout(w http.ResponseWriter, r *http.Request) {
 	// What do we want in the readout?
 	// How many of each object there are.
 	// The total energy of the whole system
-
 	vars := mux.Vars(r)
 	id := vars["id"]
 
@@ -94,12 +116,18 @@ func createReadout(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// <br>s are used for newlines in the HTML
-	outputData := "\""
-	outputData += "Grass: " + strconv.Itoa(len(sim.allGrass)) +
+	outputData := "\"" +
+		"Grass: " + strconv.Itoa(len(sim.allGrass)) +
+		"<br>" +
+		"Grass Dif: " + strconv.Itoa(len(sim.allGrass)-sim.grassSince) +
 		"<br>" +
 		"Sheep: " + strconv.Itoa(len(sim.allSheep)) +
 		"<br>" +
+		"Sheep Dif: " + strconv.Itoa(len(sim.allSheep)-sim.sheepSince) +
+		"<br>" +
 		"Wolf: " + strconv.Itoa(len(sim.allWolves)) +
+		"<br>" +
+		"Wolf Dif: " + strconv.Itoa(len(sim.allWolves)-sim.wolvesSince) +
 		"<br>" +
 		"Energy: " + addCommasToNumber(strconv.Itoa(sim.getEnergy())) +
 		"\""
@@ -107,6 +135,9 @@ func createReadout(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		fmt.Println("Issue occured in response writing.")
 	}
+	sim.grassSince = len(sim.allGrass)
+	sim.sheepSince = len(sim.allSheep)
+	sim.wolvesSince = len(sim.allWolves)
 	fmt.Println("Readout given.")
 }
 

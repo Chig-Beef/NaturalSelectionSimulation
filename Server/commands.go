@@ -9,6 +9,8 @@ import (
 	"time"
 )
 
+var max_objects int = 2000
+
 func runCommand() {
 	running := true
 	reader := bufio.NewReader(os.Stdin)
@@ -21,7 +23,7 @@ func runCommand() {
 			fmt.Println(err)
 		}
 
-		// Edge case that could cause a crash
+		// Edge case that could possibly cause a crash
 		if len(text) < 2 {
 			fmt.Println("A command went really wrong to hit this error condition.")
 			continue
@@ -45,6 +47,8 @@ func runCommand() {
 			removeKey(command[1:])
 		case "limit":
 			limit()
+		case "setMax":
+			setMax(command[1:])
 		default:
 			fmt.Println("Invalid Command.")
 		}
@@ -55,6 +59,7 @@ func runCommand() {
 }
 
 func save() {
+	// No point saving 0 simulations
 	if len(simulations) == 0 {
 		fmt.Println("There was nothing to save.")
 		return
@@ -146,12 +151,9 @@ func load() {
 		fmt.Println(err)
 		return
 	}
-
-	rawData := string(f)
-	data := strings.Split(rawData, ",")
+	data := strings.Split(string(f), ",")
 
 	for _, sim := range data {
-
 		// Get the key to put this simulation in and save it for later
 		length := strings.Index(sim, "?")
 		index, err := strconv.Atoi(sim[:length])
@@ -182,7 +184,7 @@ func load() {
 				continue
 			}
 
-			// Checkign if values are valid integers, and if so, allocating them
+			// Checkign if values are valid integers, and if so, allocate them
 
 			temp, err := strconv.Atoi(obj[0])
 			if err != nil {
@@ -313,11 +315,9 @@ func load() {
 			}
 			state.allWolves[i].brain = tempBrain
 		}
-
 		// Allocate the state
 		simulations[index] = state
 	}
-
 	fmt.Println("Loaded.")
 }
 
@@ -335,8 +335,9 @@ func help() {
 	fmt.Println("save\t\t=>\tSaves all simulations into a CSV (on this computer).")
 	fmt.Println("load\t\t=>\tLoads save file and initialises all simulations.")
 	fmt.Println("keys\t\t=>\tReturns all the keys for every active simulation.")
-	fmt.Println("remove {keys,}\t=>\tAttempts to delete all the specified keys if the simulations are not being used.\t")
+	fmt.Println("remove {keys,}\t=>\tAttempts to delete all the specified keys if the simulations are not being used.")
 	fmt.Println("remove all\t=>\tSame as above, except does this check on all simulations.")
+	fmt.Println("setMax (number)\t=>\tSets the maximum amount of objects each simulation is allowed (minimum 50).")
 }
 
 func removeKey(keys []string) {
@@ -347,9 +348,11 @@ func removeKey(keys []string) {
 
 	// Keyword "all" can be passed to attempt deletion of all keys
 	if keys[0] == "all" {
-		keys = []string{}
+		keys = make([]string, len(simulations))
+		i := 0
 		for key := range simulations {
-			keys = append(keys, strconv.Itoa(key))
+			keys[i] = strconv.Itoa(key)
+			i++
 		}
 	}
 
@@ -394,6 +397,7 @@ func removeKey(keys []string) {
 }
 
 func limit() {
+	// Get rid of a few objects to help computers die less
 	for _, sim := range simulations {
 		if len(sim.allGrass) > 150 {
 			sim.allGrass = sim.allGrass[:100]
@@ -406,4 +410,40 @@ func limit() {
 		}
 	}
 	fmt.Println("Simulations successfully limited.")
+}
+
+func setMax(nums []string) {
+	if len(nums) != 1 {
+		fmt.Println("Expected only one number.")
+		return
+	}
+
+	// Get the number
+	num, err := strconv.Atoi(nums[0])
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	// Simulations have at least some objects
+	if num < 50 {
+		fmt.Println("Number must be at least 50.")
+		return
+	}
+	max_objects = num
+
+	// Set the value
+	for _, sim := range simulations {
+		if max_objects < sim.config.sheepMaxAmt {
+			sim.config.sheepMaxAmt = max_objects
+		}
+		if max_objects < sim.config.wolfMaxAmt {
+			sim.config.wolfMaxAmt = max_objects
+		}
+		if max_objects < sim.config.grassMaxAmt {
+			sim.config.grassMaxAmt = max_objects
+		}
+	}
+
+	fmt.Println("Max has been set to", nums[0])
 }

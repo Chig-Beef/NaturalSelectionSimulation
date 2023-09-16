@@ -6,11 +6,15 @@ import (
 )
 
 type State struct {
-	allGrass  []*Grass
-	allWolves []*Wolf
-	allSheep  []*Sheep
-	active    bool
-	config    Config
+	allGrass    []*Grass
+	allWolves   []*Wolf
+	allSheep    []*Sheep
+	grassSince  int
+	sheepSince  int
+	wolvesSince int
+	active      bool
+	config      Config
+	frame       int
 }
 
 var simulations map[int]*State = make(map[int]*State) // All the student's simulations
@@ -21,6 +25,8 @@ const startingSheep int = 50
 const grassChance int = 10 // Change that grass spawns every frame. Out of 1,000.
 
 func (state *State) step() {
+	state.frame++
+
 	// Steps a State one frame
 	if len(state.allGrass) < state.config.grassMaxAmt {
 		placeGrass := rand.Intn(1_000)
@@ -36,58 +42,36 @@ func (state *State) step() {
 		}
 	}
 
-	// Wolves
-	// Count up all the alive wolves
-	count := 0
-	for i := 0; i < len(state.allWolves); i++ {
+	var i int
+	i = 0
+
+	// These are while loops (golang only has the for keyword)
+	// The else cases are if the thing has died, and so they are therefore removed
+	for i < len(state.allWolves) {
 		if state.allWolves[i].update(state) {
-			count++
+			i++
+		} else {
+			state.allWolves = append(state.allWolves[:i], state.allWolves[i+1:]...)
 		}
 	}
-	tempWolves := make([]*Wolf, count) // Create temporary slice
-	dif := 0
-	for i := 0; i < count; i++ {
-		// This is a while loops (golang only has the for keyword)
-		for !state.allWolves[i+dif].alive {
-			dif++
-		}
-		tempWolves[i] = state.allWolves[i+dif]
-	}
-	state.allWolves = tempWolves
 
-	// Sheep
-	count = 0
-	for i := 0; i < len(state.allSheep); i++ {
+	i = 0
+	for i < len(state.allSheep) {
 		if state.allSheep[i].update(state) {
-			count++
+			i++
+		} else {
+			state.allSheep = append(state.allSheep[:i], state.allSheep[i+1:]...)
 		}
 	}
-	tempSheep := make([]*Sheep, count)
-	dif = 0
-	for i := 0; i < count; i++ {
-		for !state.allSheep[i+dif].alive {
-			dif++
-		}
-		tempSheep[i] = state.allSheep[i+dif]
-	}
-	state.allSheep = tempSheep
 
-	// Grass
-	count = 0
-	for i := 0; i < len(state.allGrass); i++ {
+	i = 0
+	for i < len(state.allGrass) {
 		if state.allGrass[i].update(state) {
-			count++
+			i++
+		} else {
+			state.allGrass = append(state.allGrass[:i], state.allGrass[i+1:]...)
 		}
 	}
-	tempGrass := make([]*Grass, count)
-	dif = 0
-	for i := 0; i < count; i++ {
-		for !state.allGrass[i+dif].alive {
-			dif++
-		}
-		tempGrass[i] = state.allGrass[i+dif]
-	}
-	state.allGrass = tempGrass
 }
 
 func (state State) toJson() string {
@@ -135,20 +119,23 @@ func (state State) toJson() string {
 	sheepText += "]"
 
 	// Concat and return
-	output := "[" + grassText + "," + wolfText + "," + sheepText + "]"
+	output := "[" + strconv.Itoa(state.frame) + "," + grassText + "," + wolfText + "," + sheepText + "]"
 
 	return output
 }
 
 func createNewSimulation(id int) *State {
 	// Creates a State with a bunch of random objects
-
 	simulations[id] = &State{
 		initializeGrassSlice(),
 		initializeWolfSlice(),
 		initializeSheepSlice(),
+		startingGrass,
+		startingWolf,
+		startingSheep,
 		true,
 		makeDefaultConfig(),
+		0,
 	}
 	return simulations[id]
 }

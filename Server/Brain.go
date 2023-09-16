@@ -64,14 +64,18 @@ func createBlankBrain() Brain {
 }
 
 func createRandomConnections(brain Brain) Brain {
+	// Inputs
 	for i := 0; i < len(brain.inputs); i++ {
 		for j := 0; j < len(brain.inputs[i].links); j++ {
 			brain.inputs[i].weights = append(brain.inputs[i].weights, randWeight())
 		}
 	}
+
+	// Layers
 	var top int
 	for i := 0; i < len(brain.layers); i++ {
 		for j := 0; j < len(brain.layers[i].nodes); j++ {
+			// Check if it's part of the last layer
 			if !brain.layers[i].nodes[j].lastLayer {
 				top = len(brain.layers[i].nodes[j].linksN)
 			} else {
@@ -84,37 +88,38 @@ func createRandomConnections(brain Brain) Brain {
 		}
 	}
 
-	// Outputs don't have links
+	// Outputs don't have links, so no loop is needed for them
 
 	return brain
 }
 
+// Calculate output
 func (brain *Brain) push() {
 	// Send data through the neural network
-
 	for i := 0; i < len(brain.inputs); i++ {
 		brain.inputs[i].push()
 	}
 
 	for i := 0; i < len(brain.layers); i++ {
-		for j := 0; j < len(brain.layers[i].nodes); j++ {
-			brain.layers[i].nodes[j].push()
-		}
+		brain.layers[i].push()
 	}
 }
 
 func (brain *Brain) output_dump() ([]bool, []float32) {
-	boolOutput := []bool{}
-	floatOutput := []float32{}
+	// Make slices ready for outputs
+	boolOutput := make([]bool, len(brain.outputs))
+	floatOutput := make([]float32, len(brain.outputs))
 
+	// Put the data from the brain into the slices
 	for i := 0; i < len(brain.outputs); i++ {
 		b, f := brain.outputs[i].calc()
-		boolOutput = append(boolOutput, b)
-		floatOutput = append(floatOutput, f)
+		boolOutput[i] = b
+		floatOutput[i] = f
 	}
 	return boolOutput, floatOutput
 }
 
+// Reset to default
 func (brain *Brain) set() {
 	for i := 0; i < len(brain.inputs); i++ {
 		brain.inputs[i].set()
@@ -147,7 +152,6 @@ func (brain Brain) convToStr() string {
 		}
 		outputString = outputString[:len(outputString)-1] + "+"
 	}
-
 	outputString = outputString[:len(outputString)-1] + "="
 
 	// Nodes
@@ -162,6 +166,7 @@ func (brain Brain) convToStr() string {
 		outputString = outputString[:len(outputString)-1] + "!"
 	}
 
+	// Outputs
 	outputString = outputString[:len(outputString)-1] + "=" + strconv.Itoa(len(brain.outputs))
 
 	return outputString
@@ -177,12 +182,13 @@ func convBrainFromStr(data string) (Brain, error) {
 		return brain, errors.New("expected inputs, layers, outputs, did not get the right amount to hold these 3 values")
 	}
 
+	// Inputs
 	inputs := strings.Split(splitData[0], "+")
 	for i, input := range inputs {
-		obj := strings.Split(input, "_")
+		temp := strings.Split(input, "_")
 		brain.inputs = append(brain.inputs, Input{})
 
-		for _, weight := range obj {
+		for _, weight := range temp {
 			temp, err := strconv.ParseFloat(weight, 32)
 			if err != nil {
 				return brain, errors.New("a weight in a brain wasn't in the correct format")
@@ -192,16 +198,17 @@ func convBrainFromStr(data string) (Brain, error) {
 		}
 	}
 
+	// Layers
 	layers := strings.Split(splitData[1], "!")
 	for i, layer := range layers {
-		objL := strings.Split(layer, "+")
+		tempLayer := strings.Split(layer, "+")
 		brain.layers = append(brain.layers, Layer{})
 
-		for j, node := range objL {
-			objN := strings.Split(node, "_")
+		for j, node := range tempLayer {
+			tempNode := strings.Split(node, "_")
 			brain.layers[i].nodes = append(brain.layers[i].nodes, Node{})
 
-			for _, weight := range objN {
+			for _, weight := range tempNode {
 				temp, err := strconv.ParseFloat(weight, 32)
 				if err != nil {
 					return brain, errors.New("a weight in a brain wasn't in the correct format")
@@ -212,6 +219,7 @@ func convBrainFromStr(data string) (Brain, error) {
 		}
 	}
 
+	// Outputs
 	outputs, err := strconv.Atoi(splitData[2])
 	if err != nil {
 		return brain, errors.New("the amount of outputs was not a valid number")

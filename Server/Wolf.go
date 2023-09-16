@@ -23,12 +23,9 @@ func (wlf *Wolf) update(state *State) bool {
 	wlf.mateCooldown--
 
 	// Get the inputs
-	wlf.grassPos(state)
-	wlf.sheepPos(state)
-	wlf.wolfPos(state)
-	wlf.grassAngle(state)
-	wlf.sheepAngle(state)
-	wlf.wolfAngle(state)
+	wlf.grassPosAndAngle(state)
+	wlf.sheepPosAndAngle(state)
+	wlf.wolfPosAndAngle(state)
 	wlf.brain.inputs[3].num = 1
 
 	// Calculate
@@ -56,78 +53,10 @@ func (wlf *Wolf) update(state *State) bool {
 }
 
 // Input
-func (wlf *Wolf) grassPos(state *State) {
+func (wlf *Wolf) grassPosAndAngle(state *State) {
 	var tempDis float64
 	var x, y int
-	var d float64 = state.config.wolfViewDis * state.config.wolfViewDis
-
-	for i := 0; i < len(state.allGrass); i++ {
-		x = state.allGrass[i].x - wlf.x
-		y = state.allGrass[i].y - wlf.y
-		tempDis = math.Pow(float64(x), 2) + math.Pow(float64(y), 2)
-
-		if tempDis < d {
-			d = tempDis
-		}
-	}
-	tempDis = math.Sqrt(tempDis)
-	tempDis /= state.config.wolfViewDis
-
-	if tempDis == 1 {
-		return
-	}
-	wlf.brain.inputs[0].num = float32(tempDis)
-}
-
-func (wlf *Wolf) sheepPos(state *State) {
-	var tempDis float64
-	var x, y int
-	var d float64 = state.config.wolfViewDis * state.config.wolfViewDis
-
-	for i := 0; i < len(state.allSheep); i++ {
-		x = state.allSheep[i].x - wlf.x
-		y = state.allSheep[i].y - wlf.y
-		tempDis = math.Pow(float64(x), 2) + math.Pow(float64(y), 2)
-
-		if tempDis < d {
-			d = tempDis
-		}
-	}
-	tempDis = math.Sqrt(tempDis)
-	tempDis /= state.config.wolfViewDis
-
-	if tempDis >= 1 {
-		return
-	}
-	wlf.brain.inputs[1].num = float32(tempDis)
-}
-
-func (wlf *Wolf) wolfPos(state *State) {
-	var tempDis float64
-	var x, y int
-	var d float64 = state.config.wolfViewDis * state.config.wolfViewDis
-
-	for i := 0; i < len(state.allWolves); i++ {
-		x = state.allWolves[i].x - wlf.x
-		y = state.allWolves[i].y - wlf.y
-		tempDis = math.Pow(float64(x), 2) + math.Pow(float64(y), 2)
-
-		if tempDis < d {
-			d = tempDis
-		}
-	}
-	tempDis = math.Sqrt(tempDis)
-	tempDis /= state.config.wolfViewDis
-
-	if tempDis >= 1 {
-		return
-	}
-	wlf.brain.inputs[2].num = float32(tempDis)
-}
-
-func (wlf *Wolf) grassAngle(state *State) {
-	var tempDis float64
-	var x, y int
+	var minX int
 
 	// Maximum distance
 	var d float64 = state.config.wolfViewDis * state.config.wolfViewDis
@@ -142,41 +71,43 @@ func (wlf *Wolf) grassAngle(state *State) {
 		// Get the shortest distance
 		if tempDis < d {
 			d = tempDis
+			minX = x
 		}
 	}
 
 	// Should now be between -1 and 1
-	tempDis /= state.config.wolfViewDis
 	tempDis = math.Sqrt(tempDis)
+	tempDis /= state.config.wolfViewDis
 
 	// Range of sight
 	if tempDis >= 1 {
 		return
 	}
 
-	ang := math.Acos(1 / tempDis)
-	sign := math.Asin(1 / tempDis)
-
-	ang /= math.Pi
-	if sign < 0 {
-		ang = -ang
+	cos := float64(minX) / tempDis
+	if tempDis == 0 {
+		cos = 0
 	}
 
 	// Put this input in the brain
-	wlf.brain.inputs[3].num = float32(ang)
+	wlf.brain.inputs[0].num = float32(tempDis)
+	wlf.brain.inputs[3].num = float32(cos)
 }
 
-func (wlf *Wolf) sheepAngle(state *State) {
+func (wlf *Wolf) sheepPosAndAngle(state *State) {
 	var tempDis float64
 	var x, y int
+	var minX int
 	var d float64 = state.config.wolfViewDis * state.config.wolfViewDis
 
 	for i := 0; i < len(state.allSheep); i++ {
 		x = state.allSheep[i].x - wlf.x
 		y = state.allSheep[i].y - wlf.y
 		tempDis = math.Pow(float64(x), 2) + math.Pow(float64(y), 2)
+
 		if tempDis < d {
 			d = tempDis
+			minX = x
 		}
 	}
 	tempDis = math.Sqrt(tempDis)
@@ -185,26 +116,31 @@ func (wlf *Wolf) sheepAngle(state *State) {
 	if tempDis >= 1 {
 		return
 	}
-	ang := math.Acos(1 / tempDis)
-	sign := math.Asin(1 / tempDis)
-	ang /= math.Pi
-	if sign < 0 {
-		ang = -ang
+	cos := float64(minX) / tempDis
+	if tempDis == 0 {
+		cos = 0
 	}
-	wlf.brain.inputs[4].num = float32(ang)
+	wlf.brain.inputs[1].num = float32(tempDis)
+	wlf.brain.inputs[4].num = float32(cos)
 }
 
-func (wlf *Wolf) wolfAngle(state *State) {
+func (wlf *Wolf) wolfPosAndAngle(state *State) {
 	var tempDis float64
 	var x, y int
+	var minX int
 	var d float64 = state.config.wolfViewDis * state.config.wolfViewDis
 
 	for i := 0; i < len(state.allWolves); i++ {
+		if state.allWolves[i] == wlf {
+			continue
+		}
 		x = state.allWolves[i].x - wlf.x
 		y = state.allWolves[i].y - wlf.y
 		tempDis = math.Pow(float64(x), 2) + math.Pow(float64(y), 2)
+
 		if tempDis < d {
 			d = tempDis
+			minX = x
 		}
 	}
 	tempDis = math.Sqrt(tempDis)
@@ -213,13 +149,12 @@ func (wlf *Wolf) wolfAngle(state *State) {
 	if tempDis >= 1 {
 		return
 	}
-	ang := math.Acos(1 / tempDis)
-	sign := math.Asin(1 / tempDis)
-	ang /= math.Pi
-	if sign < 0 {
-		ang = -ang
+	cos := float64(minX) / tempDis
+	if tempDis == 0 {
+		cos = 0
 	}
-	wlf.brain.inputs[5].num = float32(ang)
+	wlf.brain.inputs[2].num = float32(tempDis)
+	wlf.brain.inputs[5].num = float32(cos)
 }
 
 // Output
@@ -292,6 +227,9 @@ func (wlf *Wolf) mate(state *State) {
 			continue
 		}
 		if high < state.allWolves[i].y {
+			continue
+		}
+		if state.allWolves[i] == wlf {
 			continue
 		}
 

@@ -6,118 +6,174 @@
         <script src="p5.js"></script>
     </head>
     <body>
+        <button id="btnStart" class="startInfo">Start</button>
+        <span class="startInfo">
+            <h2>Description</h2>
+            <p>
+                This is a simulation of natural selection which features sheep, wolves, and grass.
+                Grass grows randomly and stays still.
+                Sheep can move and eat grass.
+                Wolves can move and eat sheep.
+                When a sheep or grass has been eaten too much it is removed.
+                Sheep and wolves can detect objects in the simulation to try to follow or avoid them.
+                Sheep and wolves also can have children, which will inherit the parent's neural network.
+                Over time, the sheep should learn to survive over time, or starve/get eaten.
+            </p>
+            <h2>Using the Application</h2>
+            <p>
+                The first button on the left is the “restart” button. Using this button will delete the current simulation from the server, and start a new one.
+                The “data” button provides a little readout, which shows the numbers of each object in the simulation at that instant. It also shows the total energy in the simulation, which is the sum of every object’s energy.
+                The “help” button scrolls the page down to view some information on the simulation, and there is a “back” button to go back up.
+                Lastly, the “configure” button sends the server the current configuration.
+                All the text boxes on the sides of the screen are to change the configuration. None of the changes take effect until the “configure button” has been pressed.
+                <br>
+                CONFIGURATION: (Note, incorrect configurations will cause the button to become red)<br>
+                GRASS:<br>
+                    Energy -> How much energy an object of grass has when created<br>
+                    Size -> How big the grass is<br>
+                    Energy Loss -> How much energy the grass loses when bitten by a sheep<br>
+                    Energy Give -> How much energy a sheep gets from biting the grass<br>
+                    Maximum Amount -> The total amount of grass allowed in the simulation<br>
+                WOLVES<br>
+                    Speed -> How fast the wolves can move<br>
+                    Size -> How big the wolves are<br>
+                    Mutation Chance -> The chance (0 to 1) that a gene is not inherited but random<br>
+                    Mating Barrier -> How much energy a wolf needs to have to mate<br>
+                    Mating Loss -> How much energy a wolf loses from mating<br>
+                    Mating Cooldown (Parent) -> How long after mating a wolf needs to wait to mate again<br>
+                    Mating Cooldown (Child) -> How long after being born a wolf needs to wait to mate<br>
+                    Child Energy -> How much energy a newborn wolf has<br>
+                    Maximum Amount -> the total amount of wolves allowed in the simulation<br>
+                    View Distance -> How far a wolf can see (detect other objects)<br>
+                SHEEP<br>
+                    Speed -> How fast the sheep can move<br>
+                    Size -> How big the sheep are<br>
+                    Mutation Chance -> The chance (0 to 1) that a gene is not inherited but random<br>
+                    Mating Barrier -> How much energy a sheep needs to have to mate<br>
+                    Mating Loss -> How much energy a sheep loses from mating<br>
+                    Mating Cooldown (Parent) -> How long after mating a sheep needs to wait to mate again<br>
+                    Mating Cooldown (Child) -> How long after being born a sheep needs to wait to mate<br>
+                    Child Energy -> How much energy a newborn sheep has<br>
+                    Energy Loss -> How much energy the sheep loses when bitten by a wolf<br>
+                    Energy Give -> How much energy a wolf gets from biting the sheep<br>
+                    Maximum Amount -> the total amount of sheep allowed in the simulation<br>
+                    View Distance -> How far a sheep can see (detect other objects)
+            </p>
+        </span>
+
         <div id="topDiv">
             <h1>Natural Selection Simulation</h1>
         </div>
-
+        
         <div id="leftDiv">
-            <button id="buttonRestart">Restart</button>
-            <div id="divStats"></div>
-            <button id="buttonReadout">Data</button>
-            <div id="divReadout"></div>
-            <div id="divControlsLeft">
-                <div> <h2>Sheep:</h2><br>
-                    <label>Speed: <input type="number" value="5"></label><br>
-                    <label>Size: <input type="number" value="25"></label><br>
-                    <label>Mutation Chance: <input type="number" value="0.01"></label><br>
-                    <label>Mating Barrier: <input type="number" value="1800"></label><br>
-                    <label>Mating Loss: <input type="number" value="900"></label><br>
-                    <label>Mating Cooldown (Parent): <input type="number" value="240"></label><br>
-                    <label>Mating Cooldown (Child): <input type="number" value="360"></label><br>
-                    <label>Energy Loss: <input type="number" value="100"></label><br>
-                    <label>Energy Give: <input type="number" value="80"></label><br>
-                    <label>Child Energy: <input type="number" value="1800"></label><br>
-                    <label>Maximum Amount: <input type="number" value="300"></label><br>
-                    <label>View Distance: <input type="number" value="100"></label><br>
-                </div>
+        <button id="buttonRestart">Restart</button>
+        <label>Use Key: <input id="inputId" type="number"></label>
+        <div id="divStats"></div>
+        <button id="buttonReadout">Data</button>
+        <label>Set Timer: <input id="timerTime" type="number"></label>
+        <div id="divReadout"></div>
+        <div id="divControlsLeft">
+            <div> <h2 id="sheepControls">Sheep:</h2><br>
+                <label>Speed: <input type="number" value="5"></label><br>
+                <label>Size: <input type="number" value="25"></label><br>
+                <label>Mutation Chance: <input type="number" value="0.01"></label><br>
+                <label>Mating Barrier: <input type="number" value="1800"></label><br>
+                <label>Mating Loss: <input type="number" value="900"></label><br>
+                <label>Mating Cooldown (Parent): <input type="number" value="240"></label><br>
+                <label>Mating Cooldown (Child): <input type="number" value="360"></label><br>
+                <label>Energy Loss: <input type="number" value="100"></label><br>
+                <label>Energy Give: <input type="number" value="80"></label><br>
+                <label>Child Energy: <input type="number" value="1800"></label><br>
+                <label>Maximum Amount: <input type="number" value="300"></label><br>
+                <label>View Distance: <input type="number" value="100"></label><br>
             </div>
         </div>
-
+        </div>
+        
         <main id="mainDiv"></main>
-
+        
         <div id="rightDiv">
-            <button id="buttonHelp">Help</button>
-            <div id="divControlsRight">
-                <button id="buttonConfig">Configure</button>
-                <div> <h2>Wolf:</h2><br>
-                    <label>Speed: <input type="number" value="5"></label><br>
-                    <label>Size: <input type="number" value="25"></label><br>
-                    <label>Mutation Chance: <input type="number" value="0.01"></label><br>
-                    <label>Mating Barrier: <input type="number" value="1800"></label><br>
-                    <label>Mating Loss: <input type="number" value="900"></label><br>
-                    <label>Mating Cooldown (Parent): <input type="number" value="240"></label><br>
-                    <label>Mating Cooldown (Child): <input type="number" value="360"></label><br>
-                    <label>Child Energy: <input type="number" value="1800"></label><br>
-                    <label>Maximum amount: <input type="number" value="300"></label><br>
-                    <label>View Distance: <input type="number" value="100"></label><br>
-                </div>
-                <div> <h2>Grass:</h2><br>
-                    <label>Energy: <input type="number" value="10000"></label><br>
-                    <label>Size: <input type="number" value="25"></label><br>
-                    <label>Energy Loss: <input type="number" value="100"></label><br>
-                    <label>Energy Give: <input type="number" value="90"></label><br>
-                    <label>Maximum Amount: <input type="number" value="300"></label><br>
-                </div>
+        <button id="buttonHelp">Help</button>
+        <div id="divControlsRight">
+            <button id="buttonConfig">Configure</button>
+            <div> <h2 id="wolfControls">Wolf:</h2><br>
+                <label>Speed: <input type="number" value="5"></label><br>
+                <label>Size: <input type="number" value="25"></label><br>
+                <label>Mutation Chance: <input type="number" value="0.01"></label><br>
+                <label>Mating Barrier: <input type="number" value="1800"></label><br>
+                <label>Mating Loss: <input type="number" value="900"></label><br>
+                <label>Mating Cooldown (Parent): <input type="number" value="240"></label><br>
+                <label>Mating Cooldown (Child): <input type="number" value="360"></label><br>
+                <label>Child Energy: <input type="number" value="1800"></label><br>
+                <label>Maximum amount: <input type="number" value="300"></label><br>
+                <label>View Distance: <input type="number" value="100"></label><br>
             </div>
+            <div> <h2 id="grassControls">Grass:</h2><br>
+                <label>Energy: <input type="number" value="10000"></label><br>
+                <label>Size: <input type="number" value="25"></label><br>
+                <label>Energy Loss: <input type="number" value="100"></label><br>
+                <label>Energy Give: <input type="number" value="90"></label><br>
+                <label>Maximum Amount: <input type="number" value="300"></label><br>
+            </div>
+        </div>
         </div>
         
         <div id="bottomDiv">
-            <button id="buttonBack">Back</button>
-            <span id="helpText">
-                <h2>Description</h2>
-                <p>
-                    This is a simulation of natural selection which features sheep, wolves, and grass.
-                    Grass grows randomly and stays still.
-                    Sheep can move and eat grass.
-                    Wolves can move and eat sheep.
-                    When a sheep or grass has been eaten too much it is removed.
-                    Sheep and wolves can detect objects in the simulation to try to follow or avoid them.
-                    Sheep and wolves also can have children, which will inherit the parent's neural network.
-                    Over time, the sheep should learn to survive over time, or starve/get eaten.
-                </p>
-                <h2>Using the Application</h2>
-                <p>
-                    The first button on the left is the “restart” button. Using this button will delete the current simulation from the server, and start a new one.
-                    The “data” button provides a little readout, which shows the numbers of each object in the simulation at that instant. It also shows the total energy in the simulation, which is the sum of every object’s energy.
-                    The “help” button scrolls the page down to view some information on the simulation, and there is a “back” button to go back up.
-                    Lastly, the “configure” button sends the server the current configuration.
-                    All the text boxes on the sides of the screen are to change the configuration. None of the changes take effect until the “configure button” has been pressed.
-                    <br>
-                    CONFIGURATION:<br>
-                    GRASS:<br>
-                    	Energy -> How much energy an object of grass has when created<br>
-                    	Size -> How big the grass is<br>
-                    	Energy Loss -> How much energy the grass loses when bitten by a sheep<br>
-                    	Energy Give -> How much energy a sheep gets from biting the grass<br>
-                    	Maximum Amount -> The total amount of grass allowed in the simulation<br>
-                    WOLVES<br>
-                    	Speed -> How fast the wolves can move<br>
-                    	Size -> How big the wolves are<br>
-                    	Mutation Chance -> The chance (0 to 1) that a gene is not inherited but random<br>
-                    	Mating Barrier -> How much energy a wolf needs to have to mate<br>
-                    	Mating Loss -> How much energy a wolf loses from mating<br>
-                    	Mating Cooldown (Parent) -> How long after mating a wolf needs to wait to mate again<br>
-                    	Mating Cooldown (Child) -> How long after being born a wolf needs to wait to mate<br>
-                    	Child Energy -> How much energy a newborn wolf has<br>
-                    	Maximum Amount -> the total amount of wolves allowed in the simulation<br>
-                    	View Distance -> How far a wolf can see (detect other objects)<br>
-                    SHEEP<br>
-                    	Speed -> How fast the sheep can move<br>
-                    	Size -> How big the sheep are<br>
-                    	Mutation Chance -> The chance (0 to 1) that a gene is not inherited but random<br>
-                    	Mating Barrier -> How much energy a sheep needs to have to mate<br>
-                    	Mating Loss -> How much energy a sheep loses from mating<br>
-                    	Mating Cooldown (Parent) -> How long after mating a sheep needs to wait to mate again<br>
-                    	Mating Cooldown (Child) -> How long after being born a sheep needs to wait to mate<br>
-                    	Child Energy -> How much energy a newborn sheep has<br>
-                    	Energy Loss -> How much energy the sheep loses when bitten by a wolf<br>
-                    	Energy Give -> How much energy a wolf gets from biting the sheep<br>
-                    	Maximum Amount -> the total amount of sheep allowed in the simulation<br>
-                    	View Distance -> How far a sheep can see (detect other objects)
-                </p>
-            </span>
+        <button id="buttonBack">Back</button>
+        <span id="helpText">
+            <h2>Description</h2>
+            <p>
+                This is a simulation of natural selection which features sheep, wolves, and grass.
+                Grass grows randomly and stays still.
+                Sheep can move and eat grass.
+                Wolves can move and eat sheep.
+                When a sheep or grass has been eaten too much it is removed.
+                Sheep and wolves can detect objects in the simulation to try to follow or avoid them.
+                Sheep and wolves also can have children, which will inherit the parent's neural network.
+                Over time, the sheep should learn to survive over time, or starve/get eaten.
+            </p>
+            <h2>Using the Application</h2>
+            <p>
+                The first button on the left is the “restart” button. Using this button will delete the current simulation from the server, and start a new one.
+                The “data” button provides a little readout, which shows the numbers of each object in the simulation at that instant. It also shows the total energy in the simulation, which is the sum of every object’s energy.
+                The “help” button scrolls the page down to view some information on the simulation, and there is a “back” button to go back up.
+                Lastly, the “configure” button sends the server the current configuration.
+                All the text boxes on the sides of the screen are to change the configuration. None of the changes take effect until the “configure button” has been pressed.
+                <br>
+                CONFIGURATION: (Note, incorrect configurations will cause the button to become red)<br>
+                GRASS:<br>
+                    Energy -> How much energy an object of grass has when created<br>
+                    Size -> How big the grass is<br>
+                    Energy Loss -> How much energy the grass loses when bitten by a sheep<br>
+                    Energy Give -> How much energy a sheep gets from biting the grass<br>
+                    Maximum Amount -> The total amount of grass allowed in the simulation<br>
+                WOLVES<br>
+                    Speed -> How fast the wolves can move<br>
+                    Size -> How big the wolves are<br>
+                    Mutation Chance -> The chance (0 to 1) that a gene is not inherited but random<br>
+                    Mating Barrier -> How much energy a wolf needs to have to mate<br>
+                    Mating Loss -> How much energy a wolf loses from mating<br>
+                    Mating Cooldown (Parent) -> How long after mating a wolf needs to wait to mate again<br>
+                    Mating Cooldown (Child) -> How long after being born a wolf needs to wait to mate<br>
+                    Child Energy -> How much energy a newborn wolf has<br>
+                    Maximum Amount -> the total amount of wolves allowed in the simulation<br>
+                    View Distance -> How far a wolf can see (detect other objects)<br>
+                SHEEP<br>
+                    Speed -> How fast the sheep can move<br>
+                    Size -> How big the sheep are<br>
+                    Mutation Chance -> The chance (0 to 1) that a gene is not inherited but random<br>
+                    Mating Barrier -> How much energy a sheep needs to have to mate<br>
+                    Mating Loss -> How much energy a sheep loses from mating<br>
+                    Mating Cooldown (Parent) -> How long after mating a sheep needs to wait to mate again<br>
+                    Mating Cooldown (Child) -> How long after being born a sheep needs to wait to mate<br>
+                    Child Energy -> How much energy a newborn sheep has<br>
+                    Energy Loss -> How much energy the sheep loses when bitten by a wolf<br>
+                    Energy Give -> How much energy a wolf gets from biting the sheep<br>
+                    Maximum Amount -> the total amount of sheep allowed in the simulation<br>
+                    View Distance -> How far a sheep can see (detect other objects)
+            </p>
+        </span>
         </div>
-
         <!-- JavaScript -->
         <script src="sketch.js"></script>
     </body>
